@@ -317,6 +317,9 @@ pred createFile[actor: Person, loc: Location] {
     -- The actor cannot be server.
     actor != Server
 
+    -- The location must be powered on.
+    loc.power_state = On
+
     -- Action(s):
     -- Create a new file.
     some f: File' - File {
@@ -464,6 +467,9 @@ pred createFolder[actor: Person, loc: Location] {
 
     -- The actor cannot be server.
     actor != Server
+
+    -- The location must be powered on.
+    loc.power_state = On
 
     -- Action(s):
     -- Create a new folder.
@@ -613,6 +619,9 @@ pred moveItem[actor: Person, moved: File, destination: Folder] {
 
     -- The actor cannot be server.
     actor != Server
+
+    -- The location must be powered on.
+    moved.location.power_state = On
 
     -- The items must not be on the EmailServer.
     moved.location != EmailServer
@@ -1185,6 +1194,9 @@ pred attachFile[actor: Person, item: File, email: Email] {
     -- The actor cannot be server.
     actor != Server
 
+    -- The file's location must be powered on.
+    item.location.power_state = On
+
     -- The item to attach must be owned by the actor.
     item.item_owner = actor
 
@@ -1359,6 +1371,9 @@ pred attachFolder[actor: Person, item: Folder, email: Email] {
     -- Guard(s):
     -- The actor cannot be server.
     actor != Server
+
+    -- The folder's location must be powered on.
+    item.location.power_state = On
 
     -- The item to attach must be owned by the actor.
     item.item_owner = actor
@@ -1542,6 +1557,8 @@ pred addText[actor: Person, email: Email] {
     -- The actor cannot be server.
     actor != Server
 
+    -- TODO: Power?
+
     -- The email must be in the actor's drafts.
     email in inbox_owner.actor.drafts
 
@@ -1679,6 +1696,8 @@ pred addLink[actor: Person, item: Item, email: Email] {
     -- Guard(s):
     -- The actor cannot be server.
     actor != Server
+
+    -- TODO: Power?
 
     -- The email must be in the actor's drafts.
     email in inbox_owner.actor.drafts
@@ -1824,6 +1843,8 @@ pred removeEmailContent[actor: Person, email: Email] {
     -- The actor cannot be server.
     actor != Server
 
+    -- TODO: Power?
+
     -- The email must be in the actor's drafts.
     email in inbox_owner.actor.drafts
 
@@ -1967,6 +1988,8 @@ pred sendEmail[actor: Person, email: Email] {
     -- Guard(s):
     -- The actor cannot be server.
     actor != Server
+
+    -- TODO: Power?
 
     -- The email must still be in the actor's drafts.
     email in inbox_owner.actor.drafts
@@ -2132,6 +2155,8 @@ pred sendReply[actor: Person, email: Email, reply_to: Email] {
     -- Guard(s):
     -- The actor cannot be server.
     actor != Server
+
+    -- TODO: Power?
 
     -- The email must still be in the actor's drafts.
     email in inbox_owner.actor.drafts
@@ -2315,6 +2340,9 @@ pred editFile[actor: Person, file: File] {
     -- The actor cannot be server.
     actor != Server
 
+    -- The file's location must be powered on.
+    file.location.power_state = On
+
     -- Action(s):
     -- The file loses all its same_contents.
     no file.same_content'
@@ -2445,6 +2473,12 @@ pred downloadFileAttachment[actor: Person, email: Email] {
 
     -- The actor cannot be server.
     actor != Server
+
+    -- The actor's computer must be powered on.
+    (location_owner.actor & Computer).power_state = On
+
+    -- The email server must be powered on.
+    EmailServer.power_state = On
 
     -- Action(s):
     -- Create a new file on the actor's computer.
@@ -2604,6 +2638,12 @@ pred downloadDriveFile[actor: Person, file: File] {
     -- The actor cannot be server.
     actor != Server
 
+    -- The file's location must be powered on.
+    file.location.power_state = On
+
+    -- The actor's computer must be powered on.
+    (location_owner.actor & Computer).power_state = On
+
     -- Action(s):
     -- Create a new file on the actor's computer.
     some f: File' - File {
@@ -2761,6 +2801,12 @@ pred uploadFileToDrive[actor: Person, file: File] {
 
     -- The actor cannot be server.
     actor != Server
+
+    -- The file's location must be powered on.
+    file.location.power_state = On
+
+    -- The actor's drive must be powered on.
+    (location_owner.actor & Drive).power_state = On
 
     -- Action(s):
     -- Create a new file on the actor's drive.
@@ -2920,6 +2966,9 @@ pred duplicateFile[actor: Person, file: File] {
 
     -- The actor cannot be server.
     actor != Server
+
+    -- The file's location must be powered on.
+    file.location.power_state = On
 
     -- Action(s):
     -- Create a new file on the actor's drive.
