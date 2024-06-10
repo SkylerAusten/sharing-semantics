@@ -253,6 +253,15 @@ pred doNothing {
     EmailContent = EmailContent'
     EmailContent in EmailContent'
 
+    Text = Text'
+    Text in Text'
+
+    Attachment = Attachment'
+    Attachment in Attachment'
+
+    Link = Link'
+    Link in Link'
+
     all ec: EmailContent | {
         -- No attachment properties change.
         ec.attached = ec.attached'
@@ -392,6 +401,15 @@ pred createFile[actor: Person, loc: Location] {
     EmailContent = EmailContent'
     EmailContent in EmailContent'
 
+    Text = Text'
+    Text in Text'
+
+    Attachment = Attachment'
+    Attachment in Attachment'
+
+    Link = Link'
+    Link in Link'
+
     all ec: EmailContent | {
         -- No attachment properties change.
         ec.attached = ec.attached'
@@ -530,6 +548,15 @@ pred createFolder[actor: Person, loc: Location] {
     -- No email contents or their properties change.
     EmailContent = EmailContent'
     EmailContent in EmailContent'
+
+    Text = Text'
+    Text in Text'
+
+    Attachment = Attachment'
+    Attachment in Attachment'
+
+    Link = Link'
+    Link in Link'
 
     all ec: EmailContent | {
         -- No attachment properties change.
@@ -681,6 +708,15 @@ pred moveItem[actor: Person, moved: File, destination: Folder] {
     EmailContent = EmailContent'
     EmailContent in EmailContent'
 
+    Text = Text'
+    Text in Text'
+
+    Attachment = Attachment'
+    Attachment in Attachment'
+
+    Link = Link'
+    Link in Link'
+
     all ec: EmailContent | {
         -- No attachment properties change.
         ec.attached = ec.attached'
@@ -813,6 +849,15 @@ pred createEmail[actor: Person] {
     -- No email contents or their properties change.
     EmailContent = EmailContent'
     EmailContent in EmailContent'
+
+    Text = Text'
+    Text in Text'
+
+    Attachment = Attachment'
+    Attachment in Attachment'
+
+    Link = Link'
+    Link in Link'
 
     all ec: EmailContent | {
         -- No attachment properties change.
@@ -961,6 +1006,15 @@ pred setRecipients[actor: Person, email: Email, recipients: Person] {
     EmailContent = EmailContent'
     EmailContent in EmailContent'
 
+    Text = Text'
+    Text in Text'
+
+    Attachment = Attachment'
+    Attachment in Attachment'
+
+    Link = Link'
+    Link in Link'
+
     all ec: EmailContent | {
         -- No attachment properties change.
         ec.attached = ec.attached'
@@ -1085,6 +1139,15 @@ pred removeRecipients[actor: Person, email: Email] {
     EmailContent = EmailContent'
     EmailContent in EmailContent'
 
+    Text = Text'
+    Text in Text'
+
+    Attachment = Attachment'
+    Attachment in Attachment'
+
+    Link = Link'
+    Link in Link'
+
     all ec: EmailContent | {
         -- No attachment properties change.
         ec.attached = ec.attached'
@@ -1169,6 +1232,15 @@ pred attachFile[actor: Person, item: File, email: Email] {
         -- No other email contents change.
         EmailContent' = EmailContent + a
         EmailContent in EmailContent'
+
+        Attachment' = Attachment + a
+        Attachment in Attachment'
+
+        Text = Text'
+        Text in Text'
+
+        Link = Link'
+        Link in Link'
 
         -- The attachment must be included in the email.
         email.email_content' = a
@@ -1342,6 +1414,15 @@ pred attachFolder[actor: Person, item: Folder, email: Email] {
         EmailContent' = EmailContent + a
         EmailContent in EmailContent'
 
+        Attachment' = Attachment + a
+        Attachment in Attachment'
+
+        Text = Text'
+        Text in Text'
+
+        Link = Link'
+        Link in Link'
+
         -- The attachment must be included in the email.
         email.email_content' = a
     }
@@ -1472,7 +1553,7 @@ pred addText[actor: Person, email: Email] {
     one t: Text' - Text | {
         -- No other email contents change.
         EmailContent' = EmailContent + t
-        EmailContent in EmailContent'
+        Text' = Text + t
 
         -- The text must be included in the email.
         email.email_content' = t
@@ -1481,6 +1562,13 @@ pred addText[actor: Person, email: Email] {
     -- No email contents or their properties change,
     -- except for the newly created one.
     EmailContent in EmailContent'
+    Text in Text'
+
+    Attachment = Attachment'
+    Attachment in Attachment'
+
+    Link = Link'
+    Link in Link'
 
     all ec: EmailContent | {
         -- No attachment properties change.
@@ -1609,11 +1697,20 @@ pred addLink[actor: Person, item: Item, email: Email] {
         EmailContent' = EmailContent + l
         EmailContent in EmailContent'
 
+        Link' = Link + l
+        Link in Link'
+
         -- The text must be included in the email.
         email.email_content' = l
 
         l.points_to' = item
     }
+
+    Text = Text'
+    Text in Text'
+
+    Attachment = Attachment'
+    Attachment in Attachment'
 
     -- No email contents or their properties change,
     -- except for the newly created one.
@@ -1750,6 +1847,15 @@ pred removeEmailContent[actor: Person, email: Email] {
     -- Only email's email content is removed.
     EmailContent' = EmailContent - email.email_content
     EmailContent' in EmailContent
+
+    Attachment' = Attachment - email.email_content
+    Attachment' in Attachment
+
+    Link' = Link - email.email_content
+    Link' in Link
+
+    Text' = Text - email.email_content
+    Text' in Text
 
     all ec: EmailContent' | {
         -- No other attachment properties change.
@@ -1985,6 +2091,15 @@ pred sendEmail[actor: Person, email: Email] {
     EmailContent = EmailContent'
     EmailContent in EmailContent'
 
+    Text = Text'
+    Text in Text'
+
+    Attachment = Attachment'
+    Attachment in Attachment'
+
+    Link = Link'
+    Link in Link'
+
     all ec: EmailContent | {
         -- No attachment properties change.
         ec.attached = ec.attached'
@@ -2157,6 +2272,15 @@ pred sendReply[actor: Person, email: Email, reply_to: Email] {
     EmailContent = EmailContent'
     EmailContent in EmailContent'
 
+    Text = Text'
+    Text in Text'
+
+    Attachment = Attachment'
+    Attachment in Attachment'
+
+    Link = Link'
+    Link in Link'
+
     all ec: EmailContent | {
         -- No attachment properties change.
         ec.attached = ec.attached'
@@ -2251,6 +2375,15 @@ pred editFile[actor: Person, file: File] {
     -- No email contents or their properties change.
     EmailContent = EmailContent'
     EmailContent in EmailContent'
+
+    Text = Text'
+    Text in Text'
+
+    Attachment = Attachment'
+    Attachment in Attachment'
+
+    Link = Link'
+    Link in Link'
 
     all ec: EmailContent | {
         -- No attachment properties change.
@@ -2406,6 +2539,15 @@ pred downloadFileAttachment[actor: Person, email: Email] {
     EmailContent = EmailContent'
     EmailContent in EmailContent'
 
+    Text = Text'
+    Text in Text'
+
+    Attachment = Attachment'
+    Attachment in Attachment'
+
+    Link = Link'
+    Link in Link'
+
     all ec: EmailContent | {
         -- No attachment properties change.
         ec.attached = ec.attached'
@@ -2556,6 +2698,15 @@ pred downloadDriveFile[actor: Person, file: File] {
     EmailContent = EmailContent'
     EmailContent in EmailContent'
 
+    Text = Text'
+    Text in Text'
+
+    Attachment = Attachment'
+    Attachment in Attachment'
+
+    Link = Link'
+    Link in Link'
+
     all ec: EmailContent | {
         -- No attachment properties change.
         ec.attached = ec.attached'
@@ -2704,6 +2855,15 @@ pred uploadFileToDrive[actor: Person, file: File] {
     -- No email contents or their properties change.
     EmailContent = EmailContent'
     EmailContent in EmailContent'
+
+    Text = Text'
+    Text in Text'
+
+    Attachment = Attachment'
+    Attachment in Attachment'
+
+    Link = Link'
+    Link in Link'
 
     all ec: EmailContent | {
         -- No attachment properties change.
@@ -2854,6 +3014,15 @@ pred duplicateFile[actor: Person, file: File] {
     EmailContent = EmailContent'
     EmailContent in EmailContent'
 
+    Text = Text'
+    Text in Text'
+
+    Attachment = Attachment'
+    Attachment in Attachment'
+
+    Link = Link'
+    Link in Link'
+
     all ec: EmailContent | {
         -- No attachment properties change.
         ec.attached = ec.attached'
@@ -2975,6 +3144,15 @@ pred turnLocationOff[actor: Person, loc: Location] {
     EmailContent = EmailContent'
     EmailContent in EmailContent'
 
+    Text = Text'
+    Text in Text'
+
+    Attachment = Attachment'
+    Attachment in Attachment'
+
+    Link = Link'
+    Link in Link'
+
     all ec: EmailContent | {
         -- No attachment properties change.
         ec.attached = ec.attached'
@@ -3095,6 +3273,15 @@ pred turnLocationOn[actor: Person, loc: Location] {
     -- No email contents or their properties change.
     EmailContent = EmailContent'
     EmailContent in EmailContent'
+
+    Text = Text'
+    Text in Text'
+
+    Attachment = Attachment'
+    Attachment in Attachment'
+
+    Link = Link'
+    Link in Link'
 
     all ec: EmailContent | {
         -- No attachment properties change.
