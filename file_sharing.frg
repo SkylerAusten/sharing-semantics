@@ -22,12 +22,12 @@ one sig On, Off extends PowerState {}
 
 abstract sig Location {
     var location_owner: one Person,
-    var location_items: set Item
+    var location_items: set Item,
+    var power_state: one PowerState
 }
 
 sig Drive extends Location {
-    var shared_with_me: set Item,
-    var power_state: one PowerState
+    var shared_with_me: set Item
 }
 
 one sig BobbiDrive, JoeDrive extends Drive {}
