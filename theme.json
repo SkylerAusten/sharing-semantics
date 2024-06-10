@@ -1,0 +1,202 @@
+{
+  "hidden": {
+    "builtinDisconnected": true
+  },
+  "nodes": [
+    {
+      "shape": {
+        "shape": "rectangle",
+        "width": 100,
+        "height": 60
+      },
+      "styles": {
+        "node": {
+          "stroke": "#333",
+          "strokeWidth": 1,
+          "fill": "#ffffff"
+        },
+        "label": {
+          "fontFamily": "monospace",
+          "fontSize": "14px",
+          "textAnchor": "middle",
+          "userSelect": "none",
+          "fill": "#333"
+        }
+      },
+      "props": {
+        "label": {
+          "dy": "0.33em"
+        }
+      },
+      "targets": [
+        "*"
+      ]
+    },
+    {
+      "targets": [
+        {
+          "type": "Int"
+        }
+      ],
+      "shape": {
+        "shape": "circle",
+        "radius": 1
+      },
+      "styles": {
+        "node": {
+          "strokeWidth": 1,
+          "stroke": "#ffffff"
+        },
+        "label": {
+          "fontSize": "0"
+        }
+      }
+    },
+    {
+      "targets": [
+        {
+          "type": "RemoveText"
+        }
+      ],
+      "styles": {
+        "node": {
+          "stroke": "#ffffff"
+        },
+        "label": {
+          "fill": "#ffffff"
+        }
+      }
+    },
+    {
+      "targets": [
+        {
+          "type": "Transition"
+        }
+      ],
+      "styles": {
+        "node": {
+          "stroke": "#ffffff"
+        },
+        "label": {
+          "fill": "#ffffff"
+        }
+      },
+      "shape": {
+        "shape": "circle",
+        "radius": 1
+      }
+    }
+  ],
+  "edges": [
+    {
+      "asAttribute": false,
+      "sourceIndex": 0,
+      "curve": {
+        "type": "bspline"
+      },
+      "styles": {
+        "edge": {
+          "stroke": "#333",
+          "strokeWidth": 1,
+          "fill": "none"
+        },
+        "label": {
+          "fontFamily": "monospace",
+          "fontSize": "12px",
+          "textAnchor": "middle",
+          "userSelect": "none"
+        }
+      },
+      "targets": [
+        "*"
+      ]
+    },
+    {
+      "targets": [
+        {
+          "relation": "Location<:location_items"
+        }
+      ]
+    },
+    {
+      "targets": [
+        {
+          "relation": "Item<:item_creator"
+        }
+      ],
+      "asAttribute": true
+    },
+    {
+      "targets": [
+        {
+          "relation": "Item<:item_owner"
+        }
+      ],
+      "asAttribute": true
+    },
+    {
+      "targets": [
+        {
+          "relation": "Location<:location_owner"
+        }
+      ],
+      "asAttribute": true
+    },
+    {
+      "targets": [
+        {
+          "relation": "Item<:location"
+        }
+      ],
+      "asAttribute": true
+    },
+    {
+      "targets": [
+        {
+          "relation": "Email<:to"
+        }
+      ],
+      "asAttribute": true
+    },
+    {
+      "targets": [
+        {
+          "relation": "Email<:from"
+        }
+      ],
+      "asAttribute": true
+    },
+    {
+      "targets": [
+        {
+          "relation": "Inbox<:inbox_owner"
+        }
+      ],
+      "asAttribute": true
+    },
+    {
+      "targets": [
+        {
+          "relation": "ActionTracker<:last_act"
+        }
+      ],
+      "asAttribute": true
+    },
+    {
+      "targets": [
+        {
+          "relation": "TransitionTracker<:prevTrans"
+        }
+      ],
+      "asAttribute": true
+    },
+    {
+      "targets": [
+        {
+          "relation": "TransitionTracker<:prevActor"
+        }
+      ],
+      "asAttribute": true
+    }
+  ]
+}
