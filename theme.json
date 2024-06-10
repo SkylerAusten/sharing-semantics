@@ -197,6 +197,14 @@
         }
       ],
       "asAttribute": true
+    },
+    {
+      "targets": [
+        {
+          "relation": "Location<:power_state"
+        }
+      ],
+      "asAttribute": true
     }
   ]
 }
