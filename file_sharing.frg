@@ -27,7 +27,7 @@ abstract sig Location {
 
 sig Drive extends Location {
     var shared_with_me: set Item,
-    var powered: one PowerState
+    var power_state: one PowerState
 }
 
 one sig BobbiDrive, JoeDrive extends Drive {}
@@ -209,8 +209,8 @@ pred doNothing {
         l.location_items = l.location_items'
         l.location_items in l.location_items'
 
-        l.powered = l.powered'
-        l.powered in l.powered'
+        l.power_state = l.power_state'
+        l.power_state in l.power_state'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -371,8 +371,8 @@ pred createFile[actor: Person, loc: Location] {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
 
-        l.powered = l.powered'
-        l.powered in l.powered'
+        l.power_state = l.power_state'
+        l.power_state in l.power_state'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -510,8 +510,8 @@ pred createFolder[actor: Person, loc: Location] {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
 
-        l.powered = l.powered'
-        l.powered in l.powered'
+        l.power_state = l.power_state'
+        l.power_state in l.power_state'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -646,8 +646,8 @@ pred moveItem[actor: Person, moved: File, destination: Folder] {
         l.location_items = l.location_items'
         l.location_items in l.location_items'
 
-        l.powered = l.powered'
-        l.powered in l.powered'
+        l.power_state = l.power_state'
+        l.power_state in l.power_state'
     }
 
     -- No items or their properties change, except moved's shared_with (above).
@@ -770,8 +770,8 @@ pred createEmail[actor: Person] {
         l.location_items = l.location_items'
         l.location_items in l.location_items'
 
-        l.powered = l.powered'
-        l.powered in l.powered'
+        l.power_state = l.power_state'
+        l.power_state in l.power_state'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -917,8 +917,8 @@ pred setRecipients[actor: Person, email: Email, recipients: Person] {
         l.location_items = l.location_items'
         l.location_items in l.location_items'
 
-        l.powered = l.powered'
-        l.powered in l.powered'
+        l.power_state = l.power_state'
+        l.power_state in l.power_state'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -1041,8 +1041,8 @@ pred removeRecipients[actor: Person, email: Email] {
         l.location_items = l.location_items'
         l.location_items in l.location_items'
 
-        l.powered = l.powered'
-        l.powered in l.powered'
+        l.power_state = l.power_state'
+        l.power_state in l.power_state'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -1226,8 +1226,8 @@ pred attachFile[actor: Person, item: File, email: Email] {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
 
-        l.powered = l.powered'
-        l.powered in l.powered'
+        l.power_state = l.power_state'
+        l.power_state in l.power_state'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -1394,8 +1394,8 @@ pred attachFolder[actor: Person, item: Folder, email: Email] {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
 
-        l.powered = l.powered'
-        l.powered in l.powered'
+        l.power_state = l.power_state'
+        l.power_state in l.power_state'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -1490,7 +1490,6 @@ pred addText[actor: Person, email: Email] {
         -- No link properties change.
         ec.points_to = ec.points_to'
         ec.points_to in ec.points_to'
-
     }
 
     -- No emails or their properties change,
@@ -1526,8 +1525,8 @@ pred addText[actor: Person, email: Email] {
         l.location_items = l.location_items'
         l.location_items in l.location_items'
 
-        l.powered = l.powered'
-        l.powered in l.powered'
+        l.power_state = l.power_state'
+        l.power_state in l.power_state'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -1661,8 +1660,8 @@ pred addLink[actor: Person, item: Item, email: Email] {
         l.location_items = l.location_items'
         l.location_items in l.location_items'
 
-        l.powered = l.powered'
-        l.powered in l.powered'
+        l.power_state = l.power_state'
+        l.power_state in l.power_state'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -1782,8 +1781,8 @@ pred removeEmailContent[actor: Person, email: Email] {
         l.location_items = l.location_items'
         l.location_items in l.location_items'
 
-        l.powered = l.powered'
-        l.powered in l.powered'
+        l.power_state = l.power_state'
+        l.power_state in l.power_state'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -1946,8 +1945,8 @@ pred sendEmail[actor: Person, email: Email] {
         l.location_items = l.location_items'
         l.location_items in l.location_items'
 
-        l.powered = l.powered'
-        l.powered in l.powered'
+        l.power_state = l.power_state'
+        l.power_state in l.power_state'
     }
 
     -- No items or their properties change,
@@ -2118,8 +2117,8 @@ pred sendReply[actor: Person, email: Email, reply_to: Email] {
         l.location_items = l.location_items'
         l.location_items in l.location_items'
 
-        l.powered = l.powered'
-        l.powered in l.powered'
+        l.power_state = l.power_state'
+        l.power_state in l.power_state'
     }
 
     -- No items or their properties change,
@@ -2213,8 +2212,8 @@ pred editFile[actor: Person, file: File] {
         l.location_items = l.location_items'
         l.location_items in l.location_items'
 
-        l.powered = l.powered'
-        l.powered in l.powered'
+        l.power_state = l.power_state'
+        l.power_state in l.power_state'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -2370,8 +2369,8 @@ pred downloadFileAttachment[actor: Person, email: Email] {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
 
-        l.powered = l.powered'
-        l.powered in l.powered'
+        l.power_state = l.power_state'
+        l.power_state in l.power_state'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -2519,8 +2518,8 @@ pred downloadDriveFile[actor: Person, file: File] {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
 
-        l.powered = l.powered'
-        l.powered in l.powered'
+        l.power_state = l.power_state'
+        l.power_state in l.power_state'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -2668,8 +2667,8 @@ pred uploadFileToDrive[actor: Person, file: File] {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
 
-        l.powered = l.powered'
-        l.powered in l.powered'
+        l.power_state = l.power_state'
+        l.power_state in l.power_state'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -2818,8 +2817,8 @@ pred duplicateFile[actor: Person, file: File] {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
 
-        l.powered = l.powered'
-        l.powered in l.powered'
+        l.power_state = l.power_state'
+        l.power_state in l.power_state'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -2845,6 +2844,248 @@ pred duplicateFile[actor: Person, file: File] {
 
         i.shared_with = i.shared_with'
         i.shared_with in i.shared_with'
+
+        -- No folder properties change.
+        i.folder_items = i.folder_items'
+        i.folder_items in i.folder_items'
+    }
+
+    -- No email contents or their properties change.
+    EmailContent = EmailContent'
+    EmailContent in EmailContent'
+
+    all ec: EmailContent | {
+        -- No attachment properties change.
+        ec.attached = ec.attached'
+        ec.attached in ec.attached'
+
+        -- No link properties change.
+        ec.points_to = ec.points_to'
+        ec.points_to in ec.points_to'
+    }
+
+    -- No emails or their properties change.
+    Email = Email'
+    Email in Email'
+
+    all e: Email | {
+        e.from = e.from'
+        e.from in e.from'
+
+        e.to = e.to'
+        e.to in e.to'
+
+        e.email_content = e.email_content'
+        e.email_content in e.email_content'
+    }
+
+    -- No inboxes or their properties change.
+    Inbox = Inbox'
+    Inbox in Inbox'
+
+    all i: Inbox {
+        i.inbox_owner = i.inbox_owner'
+        i.inbox_owner in i.inbox_owner'
+
+        i.received = i.received'
+        i.received in i.received'
+
+        i.sent = i.sent'
+        i.sent in i.sent'
+
+        i.drafts = i.drafts'
+        i.drafts in i.drafts'
+
+        i.threads = i.threads'
+        i.threads in i.threads'
+    }
+}
+
+pred turnLocationOff[actor: Person, loc: Location] {
+    -- Guard(s):
+    -- The actor should own the location.
+    loc.location_owner = actor
+
+    -- The location should be on.
+    loc.power_state = On
+
+    -- Action(s):
+    -- Turn the location off.
+    loc.power_state' = Off
+
+    -- No persons change.
+    Person = Person'
+    Person in Person'
+
+    -- No locations or their properties change,
+    -- except for the specified location's power_state state.
+    Location = Location'
+    Location in Location'
+
+    all l: Location | {
+        l.location_owner = l.location_owner'
+        l.location_owner in l.location_owner'
+
+        l.location_items = l.location_items'
+        l.location_items in l.location_items'
+
+        -- No drive properties change.
+        l.shared_with_me = l.shared_with_me'
+        l.shared_with_me in l.shared_with_me'
+    }
+
+    all l: (Location - loc) | {
+        l.power_state = l.power_state'
+        l.power_state in l.power_state'
+    }
+
+    -- No items or their properties change.
+    Item = Item'
+    Item in Item'
+
+    File = File'
+    File in File'
+
+    Folder = Folder'
+    Folder in Folder'
+
+    all i: Item | {
+        i.item_creator = i.item_creator'
+        i.item_creator in i.item_creator'
+
+        i.item_owner = i.item_owner'
+        i.item_owner in i.item_owner'
+
+        i.location = i.location'
+        i.location in i.location'
+
+        i.shared_with = i.shared_with'
+        i.shared_with in i.shared_with'
+
+        -- No file properties change.
+        i.same_content = i.same_content'
+        i.same_content in i.same_content'
+
+        -- No folder properties change.
+        i.folder_items = i.folder_items'
+        i.folder_items in i.folder_items'
+    }
+
+    -- No email contents or their properties change.
+    EmailContent = EmailContent'
+    EmailContent in EmailContent'
+
+    all ec: EmailContent | {
+        -- No attachment properties change.
+        ec.attached = ec.attached'
+        ec.attached in ec.attached'
+
+        -- No link properties change.
+        ec.points_to = ec.points_to'
+        ec.points_to in ec.points_to'
+    }
+
+    -- No emails or their properties change.
+    Email = Email'
+    Email in Email'
+
+    all e: Email | {
+        e.from = e.from'
+        e.from in e.from'
+
+        e.to = e.to'
+        e.to in e.to'
+
+        e.email_content = e.email_content'
+        e.email_content in e.email_content'
+    }
+
+    -- No inboxes or their properties change.
+    Inbox = Inbox'
+    Inbox in Inbox'
+
+    all i: Inbox {
+        i.inbox_owner = i.inbox_owner'
+        i.inbox_owner in i.inbox_owner'
+
+        i.received = i.received'
+        i.received in i.received'
+
+        i.sent = i.sent'
+        i.sent in i.sent'
+
+        i.drafts = i.drafts'
+        i.drafts in i.drafts'
+
+        i.threads = i.threads'
+        i.threads in i.threads'
+    }
+}
+
+pred turnLocationOn[actor: Person, loc: Location] {
+    -- Guard(s):
+    -- The actor should own the location.
+    loc.location_owner = actor
+
+    -- The location should be off.
+    loc.power_state = Off
+
+    -- Action(s):
+    -- Turn the location off.
+    loc.power_state' = On
+
+    -- No persons change.
+    Person = Person'
+    Person in Person'
+
+    -- No locations or their properties change,
+    -- except for the specified location's power_state state.
+    Location = Location'
+    Location in Location'
+
+    all l: Location | {
+        l.location_owner = l.location_owner'
+        l.location_owner in l.location_owner'
+
+        l.location_items = l.location_items'
+        l.location_items in l.location_items'
+
+        -- No drive properties change.
+        l.shared_with_me = l.shared_with_me'
+        l.shared_with_me in l.shared_with_me'
+    }
+
+    all l: (Location - loc) | {
+        l.power_state = l.power_state'
+        l.power_state in l.power_state'
+    }
+
+    -- No items or their properties change.
+    Item = Item'
+    Item in Item'
+
+    File = File'
+    File in File'
+
+    Folder = Folder'
+    Folder in Folder'
+
+    all i: Item | {
+        i.item_creator = i.item_creator'
+        i.item_creator in i.item_creator'
+
+        i.item_owner = i.item_owner'
+        i.item_owner in i.item_owner'
+
+        i.location = i.location'
+        i.location in i.location'
+
+        i.shared_with = i.shared_with'
+        i.shared_with in i.shared_with'
+
+        -- No file properties change.
+        i.same_content = i.same_content'
+        i.same_content in i.same_content'
 
         -- No folder properties change.
         i.folder_items = i.folder_items'
