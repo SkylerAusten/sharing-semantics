@@ -1,10 +1,10 @@
 #lang forge/temporal
 
--- Trace Length:
+-- Trace Length
 option max_tracelength 18
 option min_tracelength 15
 
--- UNSAT Solver (uncomment to use):
+-- UNSAT Resolver (uncomment to use)
 // option solver MiniSatProver
 // option core_minimization rce
 // option logtranslation 1
@@ -16,13 +16,18 @@ sig Person {}
 
 one sig Bobbi, Joe, Server extends Person {}
 
+abstract sig PowerState {}
+
+one sig On, Off extends PowerState {}
+
 abstract sig Location {
     var location_owner: one Person,
     var location_items: set Item
 }
 
 sig Drive extends Location {
-    var shared_with_me: set Item
+    var shared_with_me: set Item,
+    var powered: one PowerState
 }
 
 one sig BobbiDrive, JoeDrive extends Drive {}
@@ -31,7 +36,7 @@ sig Computer extends Location {}
 
 one sig BobbiComputer, JoeComputer extends Computer {}
 
-sig EmailServer extends Location { }
+sig EmailServer extends Location {}
 
 var abstract sig Item {
     var item_creator: one Person,
@@ -76,7 +81,7 @@ sig Inbox {
 
 one sig BobbiInbox, JoeInbox extends Inbox {}
 
------------------------- Model Constraints ------------------------
+------------------------ Constraints ------------------------
 
 pred modelProperties {
     -- An email in an inbox's drafts implies the email is "from" the inbox owner.
@@ -200,8 +205,12 @@ pred doNothing {
     all l: Location | {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
+
         l.location_items = l.location_items'
         l.location_items in l.location_items'
+
+        l.powered = l.powered'
+        l.powered in l.powered'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -362,6 +371,9 @@ pred createFile[actor: Person, loc: Location] {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
 
+        l.powered = l.powered'
+        l.powered in l.powered'
+
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
         l.shared_with_me in l.shared_with_me'
@@ -498,6 +510,9 @@ pred createFolder[actor: Person, loc: Location] {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
 
+        l.powered = l.powered'
+        l.powered in l.powered'
+
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
         l.shared_with_me in l.shared_with_me'
@@ -627,8 +642,12 @@ pred moveItem[actor: Person, moved: File, destination: Folder] {
     all l: Location | {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
+
         l.location_items = l.location_items'
         l.location_items in l.location_items'
+
+        l.powered = l.powered'
+        l.powered in l.powered'
     }
 
     -- No items or their properties change, except moved's shared_with (above).
@@ -747,8 +766,12 @@ pred createEmail[actor: Person] {
     all l: Location | {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
+
         l.location_items = l.location_items'
         l.location_items in l.location_items'
+
+        l.powered = l.powered'
+        l.powered in l.powered'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -890,8 +913,12 @@ pred setRecipients[actor: Person, email: Email, recipients: Person] {
     all l: Location | {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
+
         l.location_items = l.location_items'
         l.location_items in l.location_items'
+
+        l.powered = l.powered'
+        l.powered in l.powered'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -1010,8 +1037,12 @@ pred removeRecipients[actor: Person, email: Email] {
     all l: Location | {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
+
         l.location_items = l.location_items'
         l.location_items in l.location_items'
+
+        l.powered = l.powered'
+        l.powered in l.powered'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -1195,6 +1226,9 @@ pred attachFile[actor: Person, item: File, email: Email] {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
 
+        l.powered = l.powered'
+        l.powered in l.powered'
+
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
         l.shared_with_me in l.shared_with_me'
@@ -1360,6 +1394,9 @@ pred attachFolder[actor: Person, item: Folder, email: Email] {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
 
+        l.powered = l.powered'
+        l.powered in l.powered'
+
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
         l.shared_with_me in l.shared_with_me'
@@ -1485,8 +1522,12 @@ pred addText[actor: Person, email: Email] {
     all l: Location | {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
+
         l.location_items = l.location_items'
         l.location_items in l.location_items'
+
+        l.powered = l.powered'
+        l.powered in l.powered'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -1616,8 +1657,12 @@ pred addLink[actor: Person, item: Item, email: Email] {
     all l: Location | {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
+
         l.location_items = l.location_items'
         l.location_items in l.location_items'
+
+        l.powered = l.powered'
+        l.powered in l.powered'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -1733,8 +1778,12 @@ pred removeEmailContent[actor: Person, email: Email] {
     all l: Location | {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
+
         l.location_items = l.location_items'
         l.location_items in l.location_items'
+
+        l.powered = l.powered'
+        l.powered in l.powered'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -1893,8 +1942,12 @@ pred sendEmail[actor: Person, email: Email] {
     all l: Location | {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
+
         l.location_items = l.location_items'
         l.location_items in l.location_items'
+
+        l.powered = l.powered'
+        l.powered in l.powered'
     }
 
     -- No items or their properties change,
@@ -2061,8 +2114,12 @@ pred sendReply[actor: Person, email: Email, reply_to: Email] {
     all l: Location | {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
+
         l.location_items = l.location_items'
         l.location_items in l.location_items'
+
+        l.powered = l.powered'
+        l.powered in l.powered'
     }
 
     -- No items or their properties change,
@@ -2152,8 +2209,12 @@ pred editFile[actor: Person, file: File] {
     all l: Location | {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
+
         l.location_items = l.location_items'
         l.location_items in l.location_items'
+
+        l.powered = l.powered'
+        l.powered in l.powered'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -2309,6 +2370,9 @@ pred downloadFileAttachment[actor: Person, email: Email] {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
 
+        l.powered = l.powered'
+        l.powered in l.powered'
+
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
         l.shared_with_me in l.shared_with_me'
@@ -2454,6 +2518,9 @@ pred downloadDriveFile[actor: Person, file: File] {
     all l: Location | {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
+
+        l.powered = l.powered'
+        l.powered in l.powered'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -2601,6 +2668,9 @@ pred uploadFileToDrive[actor: Person, file: File] {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
 
+        l.powered = l.powered'
+        l.powered in l.powered'
+
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
         l.shared_with_me in l.shared_with_me'
@@ -2747,6 +2817,9 @@ pred duplicateFile[actor: Person, file: File] {
     all l: Location | {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
+
+        l.powered = l.powered'
+        l.powered in l.powered'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
