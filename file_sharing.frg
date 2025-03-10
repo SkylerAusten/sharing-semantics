@@ -1,5 +1,8 @@
 #lang forge/temporal
 
+// TN: note this works now: it will pre-load the script
+option run_sterling "viz.js"
+
 -- Trace Length
 option max_tracelength 18
 option min_tracelength 15
@@ -186,6 +189,35 @@ pred ownership {
     JoeInbox in Inbox implies {JoeInbox.inbox_owner = Joe}
 }
 
+---------------------- Framing Helpers ----------------------
+
+// TN: Removing a lot of duplication to make it easier to adapt if you _do_ want 
+// these to vary over time later on. 
+
+pred nochange_sig_Person {
+    // This is tautologous at the moment 
+    // Person = Person'
+    
+    // TN: I don't believe you need this `in`, if you have the equality already?
+    //  (Although in the current formulation this is tautologous.)
+    // Same comment goes for the other pairings.
+    
+    // This is tautologous at the moment 
+    //Person in Person'
+}
+
+pred nochange_sig_Location {
+    // This is tautologous at the moment
+    // Location = Location'
+    // Location in Location'
+}
+
+pred nochange_sig_Inbox {
+    // This is tautologous at the moment
+    // Inbox = Inbox'
+    // Inbox in Inbox'
+}
+
 ------------------------ Transitions ------------------------
 
 pred doNothing {
@@ -195,12 +227,10 @@ pred doNothing {
 
     -- Action(s):
     -- No persons change.
-    Person = Person'
-    Person in Person'
+    nochange_sig_Person
 
     -- No locations or their properties change.
-    Location = Location'
-    Location in Location'
+    nochange_sig_Location 
 
     all l: Location | {
         l.location_owner = l.location_owner'
@@ -288,8 +318,7 @@ pred doNothing {
     }
 
     -- No inboxes or their properties change.
-    Inbox = Inbox'
-    Inbox in Inbox'
+    nochange_sig_Inbox
 
     all i: Inbox {
         i.inbox_owner = i.inbox_owner'
@@ -376,8 +405,7 @@ pred createFile[actor: Person, loc: Location] {
 
     -- No existing locations or their properties change,
     -- except for loc.location_items.
-    Location = Location'
-    Location in Location'
+    nochange_sig_Location
 
     all l: Location | {
         l.location_owner = l.location_owner'
@@ -397,8 +425,7 @@ pred createFile[actor: Person, loc: Location] {
     }
 
     -- No persons change.
-    Person = Person'
-    Person in Person'
+    nochange_sig_Person
 
     -- No email contents or their properties change.
     EmailContent = EmailContent'
@@ -439,8 +466,7 @@ pred createFile[actor: Person, loc: Location] {
     }
 
     -- No inboxes or their properties change.
-    Inbox = Inbox'
-    Inbox in Inbox'
+    nochange_sig_Inbox
 
     all i: Inbox {
         i.inbox_owner = i.inbox_owner'
@@ -527,8 +553,7 @@ pred createFolder[actor: Person, loc: Location] {
 
     -- No existing locations or their properties change,
     -- except for loc.location_items.
-    Location = Location'
-    Location in Location'
+    nochange_sig_Location
 
     all l: Location | {
         l.location_owner = l.location_owner'
@@ -548,8 +573,7 @@ pred createFolder[actor: Person, loc: Location] {
     }
 
     -- No persons change.
-    Person = Person'
-    Person in Person'
+    nochange_sig_Person
 
     -- No email contents or their properties change.
     EmailContent = EmailContent'
@@ -590,8 +614,7 @@ pred createFolder[actor: Person, loc: Location] {
     }
 
     -- No inboxes or their properties change.
-    Inbox = Inbox'
-    Inbox in Inbox'
+    nochange_sig_Inbox
 
     all i: Inbox {
         i.inbox_owner = i.inbox_owner'
@@ -667,13 +690,11 @@ pred moveItem[actor: Person, moved: File, destination: Folder] {
     shared_with_me in shared_with_me'
 
     -- No persons change.
-    Person = Person'
-    Person in Person'
+    nochange_sig_Person
 
     -- No locations or their properties change,
     -- except drive shared_with_me.
-    Location = Location'
-    Location in Location'
+    nochange_sig_Location
 
     all l: Location | {
         l.location_owner = l.location_owner'
@@ -752,8 +773,7 @@ pred moveItem[actor: Person, moved: File, destination: Folder] {
     }
 
     -- No inboxes or their properties change.
-    Inbox = Inbox'
-    Inbox in Inbox'
+    nochange_sig_Inbox
 
     all i: Inbox {
         i.inbox_owner = i.inbox_owner'
@@ -801,12 +821,10 @@ pred createEmail[actor: Person] {
     }
 
     -- No persons change.
-    Person = Person'
-    Person in Person'
+    nochange_sig_Person
 
     -- No locations or their properties change.
-    Location = Location'
-    Location in Location'
+    nochange_sig_Location
 
     all l: Location | {
         l.location_owner = l.location_owner'
@@ -894,8 +912,7 @@ pred createEmail[actor: Person] {
     }
 
     -- No inboxes or their properties change, except the actor's drafts.
-    Inbox = Inbox'
-    Inbox in Inbox'
+    nochange_sig_Inbox
 
     all i: Inbox {
         i.inbox_owner = i.inbox_owner'
@@ -957,12 +974,10 @@ pred setRecipients[actor: Person, email: Email, recipients: Person] {
     }
 
     -- No persons change.
-    Person = Person'
-    Person in Person'
+    nochange_sig_Person
 
     -- No locations or their properties change.
-    Location = Location'
-    Location in Location'
+    nochange_sig_Location
 
     all l: Location | {
         l.location_owner = l.location_owner'
@@ -1036,8 +1051,7 @@ pred setRecipients[actor: Person, email: Email, recipients: Person] {
     }
 
     -- No inboxes or their properties change.
-    Inbox = Inbox'
-    Inbox in Inbox'
+    nochange_sig_Inbox
 
     all i: Inbox {
         i.inbox_owner = i.inbox_owner'
@@ -1090,12 +1104,10 @@ pred removeRecipients[actor: Person, email: Email] {
     }
 
     -- No persons change.
-    Person = Person'
-    Person in Person'
+    nochange_sig_Person
 
     -- No locations or their properties change.
-    Location = Location'
-    Location in Location'
+    nochange_sig_Location
 
     all l: Location | {
         l.location_owner = l.location_owner'
@@ -1168,8 +1180,7 @@ pred removeRecipients[actor: Person, email: Email] {
     }
 
     -- No inboxes or their properties change.
-    Inbox = Inbox'
-    Inbox in Inbox'
+    nochange_sig_Inbox
 
     all i: Inbox {
         i.inbox_owner = i.inbox_owner'
@@ -1299,12 +1310,10 @@ pred attachFile[actor: Person, item: File, email: Email] {
     }
 
     -- No persons change.
-    Person = Person'
-    Person in Person'
+    nochange_sig_Person
 
     -- No locations or their properties change.
-    Location = Location'
-    Location in Location'
+    nochange_sig_Location
 
     all l: Location | {
         l.location_owner = l.location_owner'
@@ -1346,8 +1355,7 @@ pred attachFile[actor: Person, item: File, email: Email] {
 
 
     -- No inboxes or their properties change.
-    Inbox = Inbox'
-    Inbox in Inbox'
+    nochange_sig_Inbox
 
     all i: Inbox {
         i.inbox_owner = i.inbox_owner'
@@ -1479,12 +1487,10 @@ pred attachFolder[actor: Person, item: Folder, email: Email] {
     }
 
     -- No persons change.
-    Person = Person'
-    Person in Person'
+    nochange_sig_Person
 
     -- No locations or their properties change.
-    Location = Location'
-    Location in Location'
+    nochange_sig_Location
 
     all l: Location | {
         l.location_owner = l.location_owner'
@@ -1531,8 +1537,7 @@ pred attachFolder[actor: Person, item: Folder, email: Email] {
 
 
     -- No inboxes or their properties change.
-    Inbox = Inbox'
-    Inbox in Inbox'
+    nochange_sig_Inbox
 
     all i: Inbox {
         i.inbox_owner = i.inbox_owner'
@@ -1616,12 +1621,10 @@ pred addText[actor: Person, email: Email] {
     }
 
     -- No persons change.
-    Person = Person'
-    Person in Person'
+    nochange_sig_Person
 
     -- No locations or their properties change.
-    Location = Location'
-    Location in Location'
+    nochange_sig_Location
 
     all l: Location | {
         l.location_owner = l.location_owner'
@@ -1671,8 +1674,7 @@ pred addText[actor: Person, email: Email] {
     }
 
     -- No inboxes or their properties change.
-    Inbox = Inbox'
-    Inbox in Inbox'
+    nochange_sig_Inbox
 
     all i: Inbox {
         i.inbox_owner = i.inbox_owner'
@@ -1762,12 +1764,10 @@ pred addLink[actor: Person, item: Item, email: Email] {
     }
 
     -- No persons change.
-    Person = Person'
-    Person in Person'
+    nochange_sig_Person
 
     -- No locations or their properties cha nge.
-    Location = Location'
-    Location in Location'
+    nochange_sig_Location
 
     all l: Location | {
         l.location_owner = l.location_owner'
@@ -1817,8 +1817,7 @@ pred addLink[actor: Person, item: Item, email: Email] {
     }
 
     -- No inboxes or their properties change.
-    Inbox = Inbox'
-    Inbox in Inbox'
+    nochange_sig_Inbox
 
     all i: Inbox {
         i.inbox_owner = i.inbox_owner'
@@ -1894,12 +1893,10 @@ pred removeEmailContent[actor: Person, email: Email] {
     }
 
     -- No persons change.
-    Person = Person'
-    Person in Person'
+    nochange_sig_Person
 
     -- No locations or their properties change.
-    Location = Location'
-    Location in Location'
+    nochange_sig_Location
 
     all l: Location | {
         l.location_owner = l.location_owner'
@@ -1961,8 +1958,7 @@ pred removeEmailContent[actor: Person, email: Email] {
     }
 
     -- No inboxes or their properties change.
-    Inbox = Inbox'
-    Inbox in Inbox'
+    nochange_sig_Inbox
 
     all i: Inbox {
         i.inbox_owner = i.inbox_owner'
@@ -2012,8 +2008,7 @@ pred sendEmail[actor: Person, email: Email] {
    (inbox_owner.actor).drafts' = (inbox_owner.actor).drafts - email
 
     -- No inboxes change.
-    Inbox = Inbox'
-    Inbox in Inbox'
+    nochange_sig_Inbox
 
     -- No inbox ownerships or threads change (threads are updated via sendReply).
     all i: Inbox | {
@@ -2058,14 +2053,12 @@ pred sendEmail[actor: Person, email: Email] {
     all d: (Drive - (location_owner.(email.to) & Drive)) | { d.shared_with_me' = d.shared_with_me }
 
    -- No persons change.
-    Person = Person'
-    Person in Person'
+    nochange_sig_Person
 
     -- No locations or their properties change,
     -- except the to drives' shared_with_me
     -- and the email map.
-    Location = Location'
-    Location in Location'
+    nochange_sig_Location
 
     all l: Location | {
         l.location_owner = l.location_owner'
@@ -2192,8 +2185,7 @@ pred sendReply[actor: Person, email: Email, reply_to: Email] {
    (inbox_owner.actor).drafts' = (inbox_owner.actor).drafts - email
 
     -- No inboxes change.
-    Inbox = Inbox'
-    Inbox in Inbox'
+    nochange_sig_Inbox
 
     -- No inbox ownerships changes.
     all i: Inbox | {
@@ -2241,14 +2233,12 @@ pred sendReply[actor: Person, email: Email, reply_to: Email] {
     all d: (Drive - (location_owner.(email.to) & Drive)) | { d.shared_with_me' = d.shared_with_me }
 
    -- No persons change.
-    Person = Person'
-    Person in Person'
+    nochange_sig_Person
 
     -- No locations or their properties change,
     -- except the to drives' shared_with_me
     -- and the email map.
-    Location = Location'
-    Location in Location'
+    nochange_sig_Location
 
     all l: Location | {
         l.location_owner = l.location_owner'
@@ -2350,12 +2340,10 @@ pred editFile[actor: Person, file: File] {
     all i: Item - file | i.same_content' = i.same_content - file
 
     -- No persons change.
-    Person = Person'
-    Person in Person'
+    nochange_sig_Person
 
     -- No locations or their properties change.
-    Location = Location'
-    Location in Location'
+    nochange_sig_Location
 
     all l: Location | {
         l.location_owner = l.location_owner'
@@ -2439,8 +2427,7 @@ pred editFile[actor: Person, file: File] {
     }
 
     -- No inboxes or their properties change.
-    Inbox = Inbox'
-    Inbox in Inbox'
+    nochange_sig_Inbox
 
     all i: Inbox {
         i.inbox_owner = i.inbox_owner'
@@ -2525,12 +2512,10 @@ pred downloadFileAttachment[actor: Person, email: Email] {
     }
 
     -- No persons change.
-    Person = Person'
-    Person in Person'
+    nochange_sig_Person
 
     -- No locations or their properties change.
-    Location = Location'
-    Location in Location'
+    nochange_sig_Location
 
     all l: Location | {
         l.location_owner = l.location_owner'
@@ -2608,8 +2593,7 @@ pred downloadFileAttachment[actor: Person, email: Email] {
     }
 
     -- No inboxes or their properties change.
-    Inbox = Inbox'
-    Inbox in Inbox'
+    nochange_sig_Inbox
 
     all i: Inbox {
         i.inbox_owner = i.inbox_owner'
@@ -2689,12 +2673,10 @@ pred downloadDriveFile[actor: Person, file: File] {
     }
 
     -- No persons change.
-    Person = Person'
-    Person in Person'
+    nochange_sig_Person
 
     -- No locations or their properties change.
-    Location = Location'
-    Location in Location'
+    nochange_sig_Location
 
     all l: Location | {
         l.location_owner = l.location_owner'
@@ -2773,8 +2755,7 @@ pred downloadDriveFile[actor: Person, file: File] {
     }
 
     -- No inboxes or their properties change.
-    Inbox = Inbox'
-    Inbox in Inbox'
+    nochange_sig_Inbox
 
     all i: Inbox {
         i.inbox_owner = i.inbox_owner'
@@ -2853,12 +2834,10 @@ pred uploadFileToDrive[actor: Person, file: File] {
     }
 
     -- No persons change.
-    Person = Person'
-    Person in Person'
+    nochange_sig_Person
 
     -- No locations or their properties change.
-    Location = Location'
-    Location in Location'
+    nochange_sig_Location
 
     all l: Location | {
         l.location_owner = l.location_owner'
@@ -2937,8 +2916,7 @@ pred uploadFileToDrive[actor: Person, file: File] {
     }
 
     -- No inboxes or their properties change.
-    Inbox = Inbox'
-    Inbox in Inbox'
+    nochange_sig_Inbox
 
     all i: Inbox {
         i.inbox_owner = i.inbox_owner'
@@ -3015,12 +2993,10 @@ pred duplicateFile[actor: Person, file: File] {
     }
 
     -- No persons change.
-    Person = Person'
-    Person in Person'
+    nochange_sig_Person
 
     -- No locations or their properties change.
-    Location = Location'
-    Location in Location'
+    nochange_sig_Location
 
     all l: Location | {
         l.location_owner = l.location_owner'
@@ -3098,8 +3074,7 @@ pred duplicateFile[actor: Person, file: File] {
     }
 
     -- No inboxes or their properties change.
-    Inbox = Inbox'
-    Inbox in Inbox'
+    nochange_sig_Inbox
 
     all i: Inbox {
         i.inbox_owner = i.inbox_owner'
@@ -3132,13 +3107,11 @@ pred turnLocationOff[actor: Person, loc: Location] {
     loc.power_state' = Off
 
     -- No persons change.
-    Person = Person'
-    Person in Person'
+    nochange_sig_Person
 
     -- No locations or their properties change,
     -- except for the specified location's power_state state.
-    Location = Location'
-    Location in Location'
+    nochange_sig_Location
 
     all l: Location | {
         l.location_owner = l.location_owner'
@@ -3228,8 +3201,7 @@ pred turnLocationOff[actor: Person, loc: Location] {
     }
 
     -- No inboxes or their properties change.
-    Inbox = Inbox'
-    Inbox in Inbox'
+    nochange_sig_Inbox
 
     all i: Inbox {
         i.inbox_owner = i.inbox_owner'
@@ -3262,13 +3234,11 @@ pred turnLocationOn[actor: Person, loc: Location] {
     loc.power_state' = On
 
     -- No persons change.
-    Person = Person'
-    Person in Person'
+    nochange_sig_Person
 
     -- No locations or their properties change,
     -- except for the specified location's power_state state.
-    Location = Location'
-    Location in Location'
+    nochange_sig_Location
 
     all l: Location | {
         l.location_owner = l.location_owner'
@@ -3358,8 +3328,7 @@ pred turnLocationOn[actor: Person, loc: Location] {
     }
 
     -- No inboxes or their properties change.
-    Inbox = Inbox'
-    Inbox in Inbox'
+    nochange_sig_Inbox
 
     all i: Inbox {
         i.inbox_owner = i.inbox_owner'
@@ -3445,12 +3414,10 @@ pred downloadFolderAttachment[actor: Person, email: Email] {
     // }
 
     -- No persons change.
-    Person = Person'
-    Person in Person'
+    nochange_sig_Person
 
     -- No locations or their properties change.
-    Location = Location'
-    Location in Location'
+    nochange_sig_Location
 
     all l: Location | {
         l.location_owner = l.location_owner'
@@ -3512,8 +3479,7 @@ pred downloadFolderAttachment[actor: Person, email: Email] {
     }
 
     -- No inboxes or their properties change.
-    Inbox = Inbox'
-    Inbox in Inbox'
+    nochange_sig_Inbox
 
     all i: Inbox {
         i.inbox_owner = i.inbox_owner'
@@ -3781,7 +3747,9 @@ pred testTraces {
         } or {
             some p: (Person - Server), l: Location | { createFolder[p, l] }
         } or {
-            some p: Person, m: Item, d: Folder | { moveItem[p, m, d] }
+            // TN: changed from m: Item. Either need to narrow the argument 
+            //   or make the declaration more permissive.
+            some p: Person, m: File, d: Folder | { moveItem[p, m, d] }
         } or {
             some p: Person | { createEmail[p] }
         } or {
