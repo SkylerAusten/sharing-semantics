@@ -66,6 +66,7 @@ function createFileRectangle(coords, location_type) {
         color: color,
     });
 
+    // TN: I believe this isn't working well with scrolling + the helper library
     // Create an input field
     const input = document.createElement('input');
     input.type = 'text';
@@ -213,6 +214,11 @@ function generateVisualization(locations) {
     }
 
     stage.render(svg);
+
+    // TN: expand the canvas; see Forge docs.
+    const svgContainer = document.getElementById('svg-container')
+    svgContainer.getElementsByTagName('svg')[0].style.height = '200%'
+    svgContainer.getElementsByTagName('svg')[0].style.width = '200%'
 }
 
 // Example usage
