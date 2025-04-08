@@ -1,6 +1,6 @@
 #lang forge/temporal
 
-// TN: note this works now: it will pre-load the script
+// Pre-load the vizualization script
 option run_sterling "viz.js"
 
 -- Trace Length
@@ -25,8 +25,7 @@ one sig On, Off extends PowerState {}
 
 abstract sig Location {
     var location_owner: one Person,
-    var location_items: set Item,
-    var power_state: one PowerState
+    var location_items: set Item
 }
 
 sig Drive extends Location {
@@ -91,7 +90,7 @@ pred modelProperties {
     all e: Email, i: Inbox | {e in i.drafts implies e.from = i.inbox_owner}
 
     -- An email in an inbox's sent implies the email is "from" the inbox owner.
-    all e: Email, i: Inbox | {e in i.sent implies e.from = i.inbox_owner} 
+    all e: Email, i: Inbox | {e in i.sent implies e.from = i.inbox_owner}
 
     -- A file cannot have the same content as itself.
     no f: File | f in f.same_content
@@ -147,7 +146,7 @@ pred modelProperties {
     all i: Item, p: Person | {p not in i.shared_with implies {i not in ((location_owner.p) & Drive).shared_with_me}}
 
     -- An item in a folder must inherit the folder's shared_with.
-    no file: File, folder: Folder | file in folder.folder_items and folder.shared_with not in file.shared_with 
+    no file: File, folder: Folder | file in folder.folder_items and folder.shared_with not in file.shared_with
 
     -- The email server must be owned by the Server person.
     EmailServer in Location implies {EmailServer.location_owner = Server}
@@ -191,18 +190,18 @@ pred ownership {
 
 ---------------------- Framing Helpers ----------------------
 
-// TN: Removing a lot of duplication to make it easier to adapt if you _do_ want 
-// these to vary over time later on. 
+// TN: Removing a lot of duplication to make it easier to adapt if you _do_ want
+// these to vary over time later on.
 
 pred nochange_sig_Person {
-    // This is tautologous at the moment 
+    // This is tautologous at the moment
     // Person = Person'
-    
+
     // TN: I don't believe you need this `in`, if you have the equality already?
     //  (Although in the current formulation this is tautologous.)
     // Same comment goes for the other pairings.
-    
-    // This is tautologous at the moment 
+
+    // This is tautologous at the moment
     //Person in Person'
 }
 
@@ -230,7 +229,7 @@ pred doNothing {
     nochange_sig_Person
 
     -- No locations or their properties change.
-    nochange_sig_Location 
+    nochange_sig_Location
 
     all l: Location | {
         l.location_owner = l.location_owner'
@@ -238,9 +237,6 @@ pred doNothing {
 
         l.location_items = l.location_items'
         l.location_items in l.location_items'
-
-        l.power_state = l.power_state'
-        l.power_state in l.power_state'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -346,9 +342,6 @@ pred createFile[actor: Person, loc: Location] {
     -- The actor cannot be server.
     actor != Server
 
-    -- The location must be powered on.
-    loc.power_state = On
-
     -- Action(s):
     -- Create a new file.
     some f: File' - File {
@@ -410,9 +403,6 @@ pred createFile[actor: Person, loc: Location] {
     all l: Location | {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
-
-        l.power_state = l.power_state'
-        l.power_state in l.power_state'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -494,9 +484,6 @@ pred createFolder[actor: Person, loc: Location] {
     -- The actor cannot be server.
     actor != Server
 
-    -- The location must be powered on.
-    loc.power_state = On
-
     -- Action(s):
     -- Create a new folder.
     some f: Folder' - Folder | {
@@ -558,9 +545,6 @@ pred createFolder[actor: Person, loc: Location] {
     all l: Location | {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
-
-        l.power_state = l.power_state'
-        l.power_state in l.power_state'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -643,9 +627,6 @@ pred moveItem[actor: Person, moved: File, destination: Folder] {
     -- The actor cannot be server.
     actor != Server
 
-    -- The location must be powered on.
-    moved.location.power_state = On
-
     -- The items must not be on the EmailServer.
     moved.location != EmailServer
 
@@ -702,9 +683,6 @@ pred moveItem[actor: Person, moved: File, destination: Folder] {
 
         l.location_items = l.location_items'
         l.location_items in l.location_items'
-
-        l.power_state = l.power_state'
-        l.power_state in l.power_state'
     }
 
     -- No items or their properties change, except moved's shared_with (above).
@@ -832,9 +810,6 @@ pred createEmail[actor: Person] {
 
         l.location_items = l.location_items'
         l.location_items in l.location_items'
-
-        l.power_state = l.power_state'
-        l.power_state in l.power_state'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -986,9 +961,6 @@ pred setRecipients[actor: Person, email: Email, recipients: Person] {
         l.location_items = l.location_items'
         l.location_items in l.location_items'
 
-        l.power_state = l.power_state'
-        l.power_state in l.power_state'
-
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
         l.shared_with_me in l.shared_with_me'
@@ -1116,9 +1088,6 @@ pred removeRecipients[actor: Person, email: Email] {
         l.location_items = l.location_items'
         l.location_items in l.location_items'
 
-        l.power_state = l.power_state'
-        l.power_state in l.power_state'
-
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
         l.shared_with_me in l.shared_with_me'
@@ -1205,9 +1174,6 @@ pred attachFile[actor: Person, item: File, email: Email] {
     -- The actor cannot be server.
     actor != Server
 
-    -- The file's location must be powered on.
-    item.location.power_state = On
-
     -- The item to attach must be owned by the actor.
     item.item_owner = actor
 
@@ -1246,7 +1212,7 @@ pred attachFile[actor: Person, item: File, email: Email] {
             all i: item.same_content | {
                 i.same_content in i.same_content'
                 i.same_content' = i.same_content + file
-            } 
+            }
 
             a.attached' = file
             EmailServer.location_items' = EmailServer.location_items + file
@@ -1272,10 +1238,10 @@ pred attachFile[actor: Person, item: File, email: Email] {
     -- No non-related items' same_content changes.
     all i: (Item - item) - item.same_content | {
         i.same_content = i.same_content'
-        i.same_content in i.same_content'    
+        i.same_content in i.same_content'
     }
 
-    -- No existing email contents or their properties change.  
+    -- No existing email contents or their properties change.
     all ec: EmailContent | {
         -- No attachment properties change.
         ec.attached = ec.attached'
@@ -1319,9 +1285,6 @@ pred attachFile[actor: Person, item: File, email: Email] {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
 
-        l.power_state = l.power_state'
-        l.power_state in l.power_state'
-
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
         l.shared_with_me in l.shared_with_me'
@@ -1331,7 +1294,7 @@ pred attachFile[actor: Person, item: File, email: Email] {
     }
 
     -- No existing items or their properties change.
-    Item in Item'  
+    Item in Item'
 
     all i: Item | {
         i.item_creator = i.item_creator'
@@ -1380,9 +1343,6 @@ pred attachFolder[actor: Person, item: Folder, email: Email] {
     -- The actor cannot be server.
     actor != Server
 
-    -- The folder's location must be powered on.
-    item.location.power_state = On
-
     -- The item to attach must be owned by the actor.
     item.item_owner = actor
 
@@ -1425,7 +1385,7 @@ pred attachFolder[actor: Person, item: Folder, email: Email] {
                 all orig: item.folder_items | one clone: cloned_files | {
                     clone.same_content' = (orig + orig.same_content)  -- Mapping same_content individually.
                     orig.same_content' = orig.same_content + clone
-                    
+
                     all i: orig.same_content | {
                         i.same_content' = i.same_content + clone
                     }
@@ -1495,9 +1455,6 @@ pred attachFolder[actor: Person, item: Folder, email: Email] {
     all l: Location | {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
-
-        l.power_state = l.power_state'
-        l.power_state in l.power_state'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -1633,9 +1590,6 @@ pred addText[actor: Person, email: Email] {
         l.location_items = l.location_items'
         l.location_items in l.location_items'
 
-        l.power_state = l.power_state'
-        l.power_state in l.power_state'
-
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
         l.shared_with_me in l.shared_with_me'
@@ -1708,7 +1662,7 @@ pred addLink[actor: Person, item: Item, email: Email] {
     no email.email_content
 
     -- The item must be owned by or shared with the actor.
-    (item.location = location_owner.actor & Drive) or 
+    (item.location = location_owner.actor & Drive) or
     (actor in item.shared_with)
 
     -- Action(s):
@@ -1775,9 +1729,6 @@ pred addLink[actor: Person, item: Item, email: Email] {
 
         l.location_items = l.location_items'
         l.location_items in l.location_items'
-
-        l.power_state = l.power_state'
-        l.power_state in l.power_state'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -1904,9 +1855,6 @@ pred removeEmailContent[actor: Person, email: Email] {
 
         l.location_items = l.location_items'
         l.location_items in l.location_items'
-
-        l.power_state = l.power_state'
-        l.power_state in l.power_state'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -2067,8 +2015,6 @@ pred sendEmail[actor: Person, email: Email] {
         l.location_items = l.location_items'
         l.location_items in l.location_items'
 
-        l.power_state = l.power_state'
-        l.power_state in l.power_state'
     }
 
     -- No items or their properties change,
@@ -2246,9 +2192,6 @@ pred sendReply[actor: Person, email: Email, reply_to: Email] {
 
         l.location_items = l.location_items'
         l.location_items in l.location_items'
-
-        l.power_state = l.power_state'
-        l.power_state in l.power_state'
     }
 
     -- No items or their properties change,
@@ -2330,9 +2273,6 @@ pred editFile[actor: Person, file: File] {
     -- The actor cannot be server.
     actor != Server
 
-    -- The file's location must be powered on.
-    file.location.power_state = On
-
     -- Action(s):
     -- The file loses all its same_contents.
     no file.same_content'
@@ -2351,9 +2291,6 @@ pred editFile[actor: Person, file: File] {
 
         l.location_items = l.location_items'
         l.location_items in l.location_items'
-
-        l.power_state = l.power_state'
-        l.power_state in l.power_state'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -2461,12 +2398,6 @@ pred downloadFileAttachment[actor: Person, email: Email] {
     -- The actor cannot be server.
     actor != Server
 
-    -- The actor's computer must be powered on.
-    (location_owner.actor & Computer).power_state = On
-
-    -- The email server must be powered on.
-    EmailServer.power_state = On
-
     -- Action(s):
     -- Create a new file on the actor's computer.
     some f: File' - File {
@@ -2502,7 +2433,7 @@ pred downloadFileAttachment[actor: Person, email: Email] {
     -- No non-related items' same_content changes.
     all i: (Item - (email.email_content.attached)) - email.email_content.attached.same_content | {
         i.same_content = i.same_content'
-        i.same_content in i.same_content'    
+        i.same_content in i.same_content'
     }
 
     -- No location items other than the actor's computer's change.
@@ -2521,9 +2452,6 @@ pred downloadFileAttachment[actor: Person, email: Email] {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
 
-        l.power_state = l.power_state'
-        l.power_state in l.power_state'
-
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
         l.shared_with_me in l.shared_with_me'
@@ -2535,7 +2463,7 @@ pred downloadFileAttachment[actor: Person, email: Email] {
 
     Folder = Folder'
     Folder in Folder'
-    
+
     all i: Item | {
         i.item_creator = i.item_creator'
         i.item_creator in i.item_creator'
@@ -2622,12 +2550,6 @@ pred downloadDriveFile[actor: Person, file: File] {
     -- The actor cannot be server.
     actor != Server
 
-    -- The file's location must be powered on.
-    file.location.power_state = On
-
-    -- The actor's computer must be powered on.
-    (location_owner.actor & Computer).power_state = On
-
     -- Action(s):
     -- Create a new file on the actor's computer.
     some f: File' - File {
@@ -2663,7 +2585,7 @@ pred downloadDriveFile[actor: Person, file: File] {
     -- No non-related items' same_content changes.
     all i: (Item - (file)) - file.same_content | {
         i.same_content = i.same_content'
-        i.same_content in i.same_content'    
+        i.same_content in i.same_content'
     }
 
     -- No location items other than the actor's computer's change.
@@ -2682,9 +2604,6 @@ pred downloadDriveFile[actor: Person, file: File] {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
 
-        l.power_state = l.power_state'
-        l.power_state in l.power_state'
-
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
         l.shared_with_me in l.shared_with_me'
@@ -2692,7 +2611,7 @@ pred downloadDriveFile[actor: Person, file: File] {
 
     -- No existing items or their properties change.
     Item in Item'
-    
+
     File in File'
 
     Folder = Folder'
@@ -2783,12 +2702,6 @@ pred uploadFileToDrive[actor: Person, file: File] {
     -- The actor cannot be server.
     actor != Server
 
-    -- The file's location must be powered on.
-    file.location.power_state = On
-
-    -- The actor's drive must be powered on.
-    (location_owner.actor & Drive).power_state = On
-
     -- Action(s):
     -- Create a new file on the actor's drive.
     some f: File' - File {
@@ -2824,7 +2737,7 @@ pred uploadFileToDrive[actor: Person, file: File] {
     -- No non-related items' same_content changes.
     all i: (Item - (file)) - file.same_content | {
         i.same_content = i.same_content'
-        i.same_content in i.same_content'    
+        i.same_content in i.same_content'
     }
 
     -- No location items other than the actor's drive's change.
@@ -2842,9 +2755,6 @@ pred uploadFileToDrive[actor: Person, file: File] {
     all l: Location | {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
-
-        l.power_state = l.power_state'
-        l.power_state in l.power_state'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -2945,9 +2855,6 @@ pred duplicateFile[actor: Person, file: File] {
     -- The actor cannot be server.
     actor != Server
 
-    -- The file's location must be powered on.
-    file.location.power_state = On
-
     -- Action(s):
     -- Create a new file on the actor's drive.
     some f: File' - File {
@@ -2983,7 +2890,7 @@ pred duplicateFile[actor: Person, file: File] {
     -- No non-related items' same_content changes.
     all i: (Item - (file)) - file.same_content | {
         i.same_content = i.same_content'
-        i.same_content in i.same_content'    
+        i.same_content in i.same_content'
     }
 
     -- No location items other than the actor's drive's change.
@@ -3001,9 +2908,6 @@ pred duplicateFile[actor: Person, file: File] {
     all l: Location | {
         l.location_owner = l.location_owner'
         l.location_owner in l.location_owner'
-
-        l.power_state = l.power_state'
-        l.power_state in l.power_state'
 
         -- No drive properties change.
         l.shared_with_me = l.shared_with_me'
@@ -3029,260 +2933,6 @@ pred duplicateFile[actor: Person, file: File] {
 
         i.shared_with = i.shared_with'
         i.shared_with in i.shared_with'
-
-        -- No folder properties change.
-        i.folder_items = i.folder_items'
-        i.folder_items in i.folder_items'
-    }
-
-    -- No email contents or their properties change.
-    EmailContent = EmailContent'
-    EmailContent in EmailContent'
-
-    Text = Text'
-    Text in Text'
-
-    Attachment = Attachment'
-    Attachment in Attachment'
-
-    Link = Link'
-    Link in Link'
-
-    all ec: EmailContent | {
-        -- No attachment properties change.
-        ec.attached = ec.attached'
-        ec.attached in ec.attached'
-
-        -- No link properties change.
-        ec.points_to = ec.points_to'
-        ec.points_to in ec.points_to'
-    }
-
-    -- No emails or their properties change.
-    Email = Email'
-    Email in Email'
-
-    all e: Email | {
-        e.from = e.from'
-        e.from in e.from'
-
-        e.to = e.to'
-        e.to in e.to'
-
-        e.email_content = e.email_content'
-        e.email_content in e.email_content'
-    }
-
-    -- No inboxes or their properties change.
-    nochange_sig_Inbox
-
-    all i: Inbox {
-        i.inbox_owner = i.inbox_owner'
-        i.inbox_owner in i.inbox_owner'
-
-        i.received = i.received'
-        i.received in i.received'
-
-        i.sent = i.sent'
-        i.sent in i.sent'
-
-        i.drafts = i.drafts'
-        i.drafts in i.drafts'
-
-        i.threads = i.threads'
-        i.threads in i.threads'
-    }
-}
-
-pred turnLocationOff[actor: Person, loc: Location] {
-    -- Guard(s):
-    -- The actor should own the location.
-    loc.location_owner = actor
-
-    -- The location should be on.
-    loc.power_state = On
-
-    -- Action(s):
-    -- Turn the location off.
-    loc.power_state' = Off
-
-    -- No persons change.
-    nochange_sig_Person
-
-    -- No locations or their properties change,
-    -- except for the specified location's power_state state.
-    nochange_sig_Location
-
-    all l: Location | {
-        l.location_owner = l.location_owner'
-        l.location_owner in l.location_owner'
-
-        l.location_items = l.location_items'
-        l.location_items in l.location_items'
-
-        -- No drive properties change.
-        l.shared_with_me = l.shared_with_me'
-        l.shared_with_me in l.shared_with_me'
-    }
-
-    all l: (Location - loc) | {
-        l.power_state = l.power_state'
-        l.power_state in l.power_state'
-    }
-
-    -- No items or their properties change.
-    Item = Item'
-    Item in Item'
-
-    File = File'
-    File in File'
-
-    Folder = Folder'
-    Folder in Folder'
-
-    all i: Item | {
-        i.item_creator = i.item_creator'
-        i.item_creator in i.item_creator'
-
-        i.item_owner = i.item_owner'
-        i.item_owner in i.item_owner'
-
-        i.location = i.location'
-        i.location in i.location'
-
-        i.shared_with = i.shared_with'
-        i.shared_with in i.shared_with'
-
-        -- No file properties change.
-        i.same_content = i.same_content'
-        i.same_content in i.same_content'
-
-        -- No folder properties change.
-        i.folder_items = i.folder_items'
-        i.folder_items in i.folder_items'
-    }
-
-    -- No email contents or their properties change.
-    EmailContent = EmailContent'
-    EmailContent in EmailContent'
-
-    Text = Text'
-    Text in Text'
-
-    Attachment = Attachment'
-    Attachment in Attachment'
-
-    Link = Link'
-    Link in Link'
-
-    all ec: EmailContent | {
-        -- No attachment properties change.
-        ec.attached = ec.attached'
-        ec.attached in ec.attached'
-
-        -- No link properties change.
-        ec.points_to = ec.points_to'
-        ec.points_to in ec.points_to'
-    }
-
-    -- No emails or their properties change.
-    Email = Email'
-    Email in Email'
-
-    all e: Email | {
-        e.from = e.from'
-        e.from in e.from'
-
-        e.to = e.to'
-        e.to in e.to'
-
-        e.email_content = e.email_content'
-        e.email_content in e.email_content'
-    }
-
-    -- No inboxes or their properties change.
-    nochange_sig_Inbox
-
-    all i: Inbox {
-        i.inbox_owner = i.inbox_owner'
-        i.inbox_owner in i.inbox_owner'
-
-        i.received = i.received'
-        i.received in i.received'
-
-        i.sent = i.sent'
-        i.sent in i.sent'
-
-        i.drafts = i.drafts'
-        i.drafts in i.drafts'
-
-        i.threads = i.threads'
-        i.threads in i.threads'
-    }
-}
-
-pred turnLocationOn[actor: Person, loc: Location] {
-    -- Guard(s):
-    -- The actor should own the location.
-    loc.location_owner = actor
-
-    -- The location should be off.
-    loc.power_state = Off
-
-    -- Action(s):
-    -- Turn the location off.
-    loc.power_state' = On
-
-    -- No persons change.
-    nochange_sig_Person
-
-    -- No locations or their properties change,
-    -- except for the specified location's power_state state.
-    nochange_sig_Location
-
-    all l: Location | {
-        l.location_owner = l.location_owner'
-        l.location_owner in l.location_owner'
-
-        l.location_items = l.location_items'
-        l.location_items in l.location_items'
-
-        -- No drive properties change.
-        l.shared_with_me = l.shared_with_me'
-        l.shared_with_me in l.shared_with_me'
-    }
-
-    all l: (Location - loc) | {
-        l.power_state = l.power_state'
-        l.power_state in l.power_state'
-    }
-
-    -- No items or their properties change.
-    Item = Item'
-    Item in Item'
-
-    File = File'
-    File in File'
-
-    Folder = Folder'
-    Folder in Folder'
-
-    all i: Item | {
-        i.item_creator = i.item_creator'
-        i.item_creator in i.item_creator'
-
-        i.item_owner = i.item_owner'
-        i.item_owner in i.item_owner'
-
-        i.location = i.location'
-        i.location in i.location'
-
-        i.shared_with = i.shared_with'
-        i.shared_with in i.shared_with'
-
-        -- No file properties change.
-        i.same_content = i.same_content'
-        i.same_content in i.same_content'
 
         -- No folder properties change.
         i.folder_items = i.folder_items'
@@ -3393,7 +3043,7 @@ pred downloadFolderAttachment[actor: Person, email: Email] {
             // all orig: email.email_content.attached.folder_items | one clone: cloned_files | {
             //     clone.same_content' = (orig + orig.same_content)  -- Mapping same_content individually.
             //     orig.same_content' = orig.same_content + clone
-                
+
             //     all i: orig.same_content | {
             //         i.same_content' = i.^same_content + clone
             //     }
@@ -3404,7 +3054,7 @@ pred downloadFolderAttachment[actor: Person, email: Email] {
     -- No non-related items' same_content changes.
     // all i: (Item - (email.email_content.attached)) - email.email_content.attached.^same_content | {
     //     i.same_content = i.same_content'
-    //     i.same_content in i.same_content'    
+    //     i.same_content in i.same_content'
     // }
 
     // -- No location items other than the actor's computer's change.
@@ -3506,7 +3156,7 @@ pred downloadDriveFolder[actor: Person, item: Item] {
 
 pred uploadFolderToDrive[actor: Person, item: Item] {
 
-} 
+}
 
 pred unshareItem[actor: Person, item: Item] {
 
@@ -3516,128 +3166,128 @@ pred duplicateDriveFolder {
 
 }
 
-// pred deleteFile[actor: Person, file: File] {
-//     -- Guard(s):
-//     -- The actor must own the file.
-//     file.item_owner = actor
+pred deleteFile[actor: Person, file: File] {
+    -- Guard(s):
+    -- The actor must own the file.
+    file.item_owner = actor
 
-//     -- The actor cannot be server.
-//     actor != Server
+    -- The actor cannot be server.
+    actor != Server
 
-//     -- Action(s):
-//     -- Remove the file.
-//     File' = File - file
+    -- Action(s):
+    -- Remove the file.
+    File' = File - file
 
-//     -- All other items remain the same.
-//     File' in File
+    -- All other items remain the same.
+    File' in File
 
-//     Item' = Item - file
-//     Item' in Item
+    Item' = Item - file
+    Item' in Item
 
-//     Folder' = Folder
-//     Folder in Folder'
+    Folder' = Folder
+    Folder in Folder'
 
-//     -- All
+    -- All
 
-//     -- No remaining item properties change except folder items & same content.
-//     all i: Item - file | {
-//         i.item_creator = i.item_creator'
-//         i.item_creator in i.item_creator'
+    -- No remaining item properties change except folder items & same content.
+    all i: Item - file | {
+        i.item_creator = i.item_creator'
+        i.item_creator in i.item_creator'
 
-//         i.item_owner = i.item_owner'
-//         i.item_owner in i.item_owner'
+        i.item_owner = i.item_owner'
+        i.item_owner in i.item_owner'
 
-//         i.location = i.location'
-//         i.location in i.location'
+        i.location = i.location'
+        i.location in i.location'
 
-//         i.shared_with = i.shared_with'
-//         i.shared_with in i.shared_with'
-//     }
+        i.shared_with = i.shared_with'
+        i.shared_with in i.shared_with'
+    }
 
-//     all i: Item - file.same_content {
-//         i.same_content = i.same_content'
-//         i.same_content in i.same_content'
-//     }
+    all i: Item - file.same_content {
+        i.same_content = i.same_content'
+        i.same_content in i.same_content'
+    }
 
-//     all i: file.same_content {
-//         i.same_content' = i.same_content - file
-//         i.same_content' in i.same_content
-//     }
+    all i: file.same_content {
+        i.same_content' = i.same_content - file
+        i.same_content' in i.same_content
+    }
 
-//     folder_items' = folder_items - (Folder->file)
-//     folder_items' in folder_items
+    folder_items' = folder_items - (Folder->file)
+    folder_items' in folder_items
 
-//     -- No existing locations change.
-//     Location = Location'
-//     Location in Location'
+    -- No existing locations change.
+    Location = Location'
+    Location in Location'
 
-//     all l: Location | {
-//         l.location_owner = l.location_owner'
-//         l.location_owner in l.location_owner'
-//     }
+    all l: Location | {
+        l.location_owner = l.location_owner'
+        l.location_owner in l.location_owner'
+    }
 
-//     shared_with_me' = shared_with_me - (Drive->file)
-//     shared_with_me' in shared_with_me
+    shared_with_me' = shared_with_me - (Drive->file)
+    shared_with_me' in shared_with_me
 
-//     all l: (Location) | {
-//         l.location_items = l.location_items'
-//         l.location_items in l.location_items'
-//     }
+    all l: (Location) | {
+        l.location_items = l.location_items'
+        l.location_items in l.location_items'
+    }
 
-//     -- No persons change.
-//     Person = Person'
-//     Person in Person'
+    -- No persons change.
+    Person = Person'
+    Person in Person'
 
-//     -- No email contents or their properties change.
-//     EmailContent = EmailContent'
-//     EmailContent in EmailContent'
+    -- No email contents or their properties change.
+    EmailContent = EmailContent'
+    EmailContent in EmailContent'
 
-//     all ec: EmailContent | {
-//         -- No attachment properties change.
-//         ec.attached = ec.attached'
-//         ec.attached in ec.attached'
+    all ec: EmailContent | {
+        -- No attachment properties change.
+        ec.attached = ec.attached'
+        ec.attached in ec.attached'
 
-//         -- No link properties change.
-//         ec.points_to = ec.points_to'
-//         ec.points_to in ec.points_to'
-//     }
+        -- No link properties change.
+        ec.points_to = ec.points_to'
+        ec.points_to in ec.points_to'
+    }
 
-//     -- No emails or their properties change.
-//     Email = Email'
-//     Email in Email'
+    -- No emails or their properties change.
+    Email = Email'
+    Email in Email'
 
-//     all e: Email | {
-//         e.from = e.from'
-//         e.from in e.from'
+    all e: Email | {
+        e.from = e.from'
+        e.from in e.from'
 
-//         e.to = e.to'
-//         e.to in e.to'
+        e.to = e.to'
+        e.to in e.to'
 
-//         e.email_content = e.email_content'
-//         e.email_content in e.email_content'
-//     }
+        e.email_content = e.email_content'
+        e.email_content in e.email_content'
+    }
 
-//     -- No inboxes or their properties change.
-//     Inbox = Inbox'
-//     Inbox in Inbox'
+    -- No inboxes or their properties change.
+    Inbox = Inbox'
+    Inbox in Inbox'
 
-//     all i: Inbox {
-//         i.inbox_owner = i.inbox_owner'
-//         i.inbox_owner in i.inbox_owner'
+    all i: Inbox {
+        i.inbox_owner = i.inbox_owner'
+        i.inbox_owner in i.inbox_owner'
 
-//         i.received = i.received'
-//         i.received in i.received'
+        i.received = i.received'
+        i.received in i.received'
 
-//         i.sent = i.sent'
-//         i.sent in i.sent'
+        i.sent = i.sent'
+        i.sent in i.sent'
 
-//         i.drafts = i.drafts'
-//         i.drafts in i.drafts'
+        i.drafts = i.drafts'
+        i.drafts in i.drafts'
 
-//         i.threads = i.threads'
-//         i.threads in i.threads'
-//     }
-// }
+        i.threads = i.threads'
+        i.threads in i.threads'
+    }
+}
 
 pred deleteFolder {
     -- TODO: what if the item is a folder with items?
@@ -3706,7 +3356,7 @@ pred testFinal {
     //     f1.location = JoeComputer
     //     f2.location = BobbiComputer
     //     f3.location = EmailServer
-        
+
     //     f2.item_creator = Joe
     //     f3.item_creator = Joe
     // }
@@ -3717,7 +3367,7 @@ pred testFinal {
         f3.location = EmailServer
         f2 in f1.same_content
         f3 in f1.same_content
-        
+
         f2.item_creator = Joe
         f3.item_creator = Joe
     }
@@ -3747,7 +3397,7 @@ pred testTraces {
         } or {
             some p: (Person - Server), l: Location | { createFolder[p, l] }
         } or {
-            // TN: changed from m: Item. Either need to narrow the argument 
+            // TN: changed from m: Item. Either need to narrow the argument
             //   or make the declaration more permissive.
             some p: Person, m: File, d: Folder | { moveItem[p, m, d] }
         } or {
@@ -3763,7 +3413,7 @@ pred testTraces {
         } or {
             some p: Person, a: Folder, e: Email | { attachFolder[p, a, e] }
         } or {
-            some p: Person, e: Email | { addText[p, e] } 
+            some p: Person, e: Email | { addText[p, e] }
         } or {
             some p: Person, f: File | { editFile[p, f] }
         } or {
@@ -3780,7 +3430,7 @@ pred testTraces {
 run {
     testTraces
 } for exactly 3 Person,
-    exactly 5 Location, exactly 2 Drive, exactly 2 Computer, 
+    exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
     exactly 1 EmailServer, exactly 2 Inbox,
     8 Item, 7 File, 1 Folder,
     2 EmailContent, 2 Email
@@ -3803,7 +3453,7 @@ run {
     //     } or {
     //         some p: Person, a: Folder, e: Email | { attachFolder[p, a, e] }
     //     } or {
-    //         some p: Person, e: Email | { addText[p, e] } 
+    //         some p: Person, e: Email | { addText[p, e] }
     //     } or {
     //         some p: Person, f: File | { editFile[p, f] }
     //     } or {
