@@ -1,0 +1,39 @@
+constraints:
+  - group:
+      field: location_items
+      target: domain
+  - group:
+      field: folder_items
+      target: domain
+  - orientation:
+      appliesTo:
+        - Location
+        - Item
+      field: location_items
+      directions:
+        - below
+  - orientation:
+      appliesTo:
+        - EmailContent
+        - Email
+      field: email_content
+      directions:
+        - below
+directives:
+  - flag: hideDisconnectedBuiltIns
+  - color:
+      sig: Folder
+      value: '#008040'
+  - color:
+      sig: Inbox
+      value: '#ff0000'
+  - attribute:
+      field: power_state
+  - attribute:
+      field: item_creator
+  - attribute:
+      field: item_owner
+  - attribute:
+      field: location
+  - attribute:
+      field: location_owner
