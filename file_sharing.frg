@@ -109,12 +109,14 @@ pred modelProperties {
     -- All items must have the same location as the folder they're in.
     all file: File, folder: Folder | file in folder.folder_items implies file.location = folder.location
 
-    -- All same_content relations are reciprocal.
+    -- All same_content relations are symmetric.
     all disj f1, f2: File | f2 in f1.same_content iff { f1 in f2.same_content }
 
-    -- same_content is transitively closed.
-    all disj f1, f2: File |
-		f2 in f1.^same_content implies f2 in f1.same_content
+    // -- same_content is transitively closed.
+    // all disj f1, f2: File |
+	// 	f2 in f1.^same_content implies f2 in f1.same_content
+
+    all disj f1, f2, f3: File | (f1 in f2.same_content and f2 in f3.same_content) implies f1 in f3.same_content
 
     -- No item can be in more than one folder's items.
     no disj f1, f2: Folder, i: Item |
@@ -2512,11 +2514,12 @@ pred finalState {
 }
 
 pred testTraces {
-    initState
+    // initState
     modelProperties and ownership
+    next_state {not modelProperties}
     limitedTransitions
-    eventually {midStates}
-    eventually {always {finalState}}
+    // eventually {midStates}
+    // eventually {always {finalState}}
 }
 
 run {

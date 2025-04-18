@@ -14,7 +14,7 @@ option min_tracelength 8
 
 -- Test that modelProperties is sat given specified Sig counts.
 test expect { modelPropertiesSat: {modelProperties} for exactly 3 Person,
-    exactly 5 Location, exactly 2 Drive, exactly 2 Computer, 
+    exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
     exactly 1 EmailServer, exactly 2 Inbox,
     5 Item, 5 File, 2 Folder,
     2 EmailContent, 3 Email
@@ -28,7 +28,7 @@ pred draftsAndSent {
 
 -- Confirmed UNSAT.
 // test expect { draftsAndSentUnsat: {modelProperties and draftsAndSent} for exactly 3 Person,
-//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer, 
+//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
 //     exactly 1 EmailServer, exactly 2 Inbox,
 //     0 Item, 0 File, 0 Folder,
 //     1 EmailContent, 1 Email
@@ -44,15 +44,17 @@ pred cyclicalSameContent {
 -- Check this combination of max atoms is SAT.
 -- Confirmed SAT.
 // test expect { cyclicalSameContentUnsat: {modelProperties} for exactly 3 Person,
-//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer, 
+//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
 //     exactly 1 EmailServer, exactly 2 Inbox,
 //     1 Item, 1 File, 0 Folder,
 //     0 EmailContent, 0 Email
 // is sat }
 
+test expect 
+
 -- Confirmed UNSAT.
 // test expect { cyclicalSameContentUnsat: {modelProperties and cyclicalSameContent} for exactly 3 Person,
-//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer, 
+//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
 //     exactly 1 EmailServer, exactly 2 Inbox,
 //     1 Item, 1 File, 0 Folder,
 //     0 EmailContent, 0 Email
@@ -65,7 +67,7 @@ pred itemInTwoLocations {
 
 -- Confirmed UNSAT.
 // test expect { itemInTwoLocationsUnsat: {modelProperties and itemInTwoLocations} for exactly 3 Person,
-//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer, 
+//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
 //     exactly 1 EmailServer, exactly 2 Inbox,
 //     1 Item, 1 File, 1 Folder,
 //     0 EmailContent, 0 Email
@@ -81,7 +83,7 @@ pred sharedComputerItem {
 
 -- Confirmed UNSAT.
 // test expect { sharedComputerItemUnsat: {modelProperties and sharedComputerItem} for exactly 3 Person,
-//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer, 
+//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
 //     exactly 1 EmailServer, exactly 2 Inbox,
 //     1 Item, 1 File, 1 Folder,
 //     0 EmailContent, 0 Email
@@ -94,7 +96,7 @@ pred itemSharedWithOwner {
 
 -- Confirmed UNSAT.
 // test expect { itemSharedWithOwnerUnsat: {modelProperties and itemSharedWithOwner} for exactly 3 Person,
-//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer, 
+//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
 //     exactly 1 EmailServer, exactly 2 Inbox,
 //     1 Item, 1 File, 1 Folder,
 //     0 EmailContent, 0 Email
@@ -107,7 +109,7 @@ pred mismatchedItemLocationOwner {
 
 -- Confirmed UNSAT.
 // test expect { mismatchedItemLocationOwnerUnsat: {modelProperties and mismatchedItemLocationOwner} for exactly 3 Person,
-//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer, 
+//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
 //     exactly 1 EmailServer, exactly 2 Inbox,
 //     1 Item, 1 File, 1 Folder,
 //     0 EmailContent, 0 Email
@@ -120,7 +122,7 @@ pred nonReciprocalSameContent {
 
 -- Confirmed UNSAT.
 // test expect { nonReciprocalSameContentUnsat: {modelProperties and nonReciprocalSameContent} for exactly 3 Person,
-//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer, 
+//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
 //     exactly 1 EmailServer, exactly 2 Inbox,
 //     2 Item, 2 File, 0 Folder,
 //     0 EmailContent, 0 Email
@@ -133,7 +135,7 @@ pred itemInMultipleFolders {
 
 -- Confirmed UNSAT.
 // test expect { itemInMultipleFoldersUnsat: {modelProperties and itemInMultipleFolders} for exactly 3 Person,
-//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer, 
+//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
 //     exactly 1 EmailServer, exactly 2 Inbox,
 //     3 Item, 1 File, 2 Folder,
 //     0 EmailContent, 0 Email
@@ -148,7 +150,7 @@ pred duplicateEmailContent {
 -- Test that this combination of max items and the preds are individually SAT.
 -- Confirmed SAT.
 // test expect { duplicateEmailContentSat1: {duplicateEmailContent} for exactly 3 Person,
-//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer, 
+//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
 //     exactly 1 EmailServer, exactly 2 Inbox,
 //     1 Item, 1 File, 0 Folder,
 //     1 EmailContent, 2 Email
@@ -156,7 +158,7 @@ pred duplicateEmailContent {
 
 -- Confirmed SAT.
 // test expect { duplicateEmailContentSat2: {modelProperties} for exactly 3 Person,
-//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer, 
+//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
 //     exactly 1 EmailServer, exactly 2 Inbox,
 //     1 Item, 1 File, 0 Folder,
 //     1 EmailContent, 2 Email
@@ -164,7 +166,7 @@ pred duplicateEmailContent {
 
 -- Confirmed UNSAT.
 // test expect { duplicateEmailContentUnsat: {modelProperties and duplicateEmailContent} for exactly 3 Person,
-//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer, 
+//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
 //     exactly 1 EmailServer, exactly 2 Inbox,
 //     1 Item, 1 File, 0 Folder,
 //     1 EmailContent, 2 Email
@@ -177,7 +179,7 @@ pred itemNotInDriveButShared {
 
 -- Confirmed UNSAT.
 // test expect { itemNotInDriveButSharedUnsat: {modelProperties and itemNotInDriveButShared} for exactly 3 Person,
-//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer, 
+//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
 //     exactly 1 EmailServer, exactly 2 Inbox,
 //     1 Item, 1 File, 1 Folder,
 //     0 EmailContent, 0 Email
@@ -190,7 +192,7 @@ pred wrongServerOwnership {
 
 -- Confirmed UNSAT.
 // test expect { wrongServerOwnershipUnsat: {modelProperties and wrongServerOwnership} for exactly 3 Person,
-//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer, 
+//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
 //     exactly 1 EmailServer, exactly 2 Inbox,
 //     3 Item, 2 File, 2 Folder,
 //     0 EmailContent, 0 Email
@@ -203,7 +205,7 @@ pred itemInEmailMapNotOnServer {
 
 -- Confirmed UNSAT.
 // test expect { itemInEmailMapNotOnServerUnsat: {modelProperties and itemInEmailMapNotOnServer} for exactly 3 Person,
-//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer, 
+//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
 //     exactly 1 EmailServer, exactly 2 Inbox,
 //     3 Item, 2 File, 2 Folder,
 //     0 EmailContent, 1 Email
@@ -221,7 +223,7 @@ pred itemsInEmailMapNotOnServer {
 
 -- Confirmed UNSAT.
 // test expect { itemsInEmailMapNotOnServerUnsat: {modelProperties and itemsInEmailMapNotOnServer} for exactly 3 Person,
-//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer, 
+//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
 //     exactly 1 EmailServer, exactly 2 Inbox,
 //     3 Item, 2 File, 2 Folder,
 //     0 EmailContent, 1 Email
@@ -235,7 +237,7 @@ pred attachedItemNotOnServer {
 
 -- Confirmed UNSAT.
 // test expect { attachedItemNotOnServerUnsat: {modelProperties and attachedItemNotOnServer} for exactly 3 Person,
-//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer, 
+//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
 //     exactly 1 EmailServer, exactly 2 Inbox,
 //     3 Item, 2 File, 2 Folder,
 //     0 EmailContent, 0 Email
@@ -248,7 +250,7 @@ pred linkedItemNotInDrive {
 
 -- Confirmed UNSAT.
 // test expect { linkedItemNotInDriveUnsat: {modelProperties and linkedItemNotInDrive} for exactly 3 Person,
-//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer, 
+//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
 //     exactly 1 EmailServer, exactly 2 Inbox,
 //     3 Item, 2 File, 2 Folder,
 //     0 EmailContent, 0 Email
@@ -261,7 +263,7 @@ pred emailInDraftsAndSentOrReceived {
 
 -- Confirmed UNSAT.
 // test expect { emailInDraftsAndSentOrReceivedUnsat: {modelProperties and emailInDraftsAndSentOrReceived} for exactly 3 Person,
-//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer, 
+//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
 //     exactly 1 EmailServer, exactly 2 Inbox,
 //     3 Item, 2 File, 2 Folder,
 //     1 EmailContent, 1 Email
@@ -278,7 +280,7 @@ pred serverOwnsProhibitedLocations {
 
 -- Confirmed UNSAT.
 // test expect { serverOwnsProhibitedItemUnsat: {modelProperties and serverOwnsProhibitedLocations} for exactly 3 Person,
-//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer, 
+//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
 //     exactly 1 EmailServer, exactly 2 Inbox,
 //     3 Item, 2 File, 2 Folder,
 //     1 EmailContent, 1 Email
@@ -291,7 +293,7 @@ pred itemFolderLocationMismatch {
 
 -- Confirmed UNSAT.
 // test expect { itemFolderLocationMismatchUnsat: {modelProperties and itemFolderLocationMismatch} for exactly 3 Person,
-//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer, 
+//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
 //     exactly 1 EmailServer, exactly 2 Inbox,
 //     4 Item, 3 File, 2 Folder,
 //     0 EmailContent, 0 Email
@@ -321,7 +323,7 @@ pred doNothingTraces {
 -- Test that doNothing cannot violate modelProperties or ownership or create new Items, Emails, or EmailContents.
 -- Confirmed UNSAT.
 // test expect { doNothingViolationUnsat: {testTraces} for exactly 3 Person,
-//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer, 
+//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
 //     exactly 1 EmailServer, exactly 2 Inbox,
 //     3 Item, 3 File, 3 Folder,
 //     2 EmailContent, 2 Email
@@ -348,7 +350,7 @@ pred createAndMoveViolationTraces {
 -- Test that createFile, createFolder, and moveItem cannot violate modelProperties or ownership or create new Emails or EmailContents.
 -- Confirmed UNSAT.
 // test expect { createAndMoveViolationUnsat: {createAndMoveViolationTraces} for exactly 3 Person,
-//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer, 
+//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
 //     exactly 1 EmailServer, exactly 2 Inbox,
 //     3 Item, 3 File, 3 Folder,
 //     2 EmailContent, 2 Email
@@ -395,7 +397,7 @@ pred createAndMoveTraces {
 -- Test that createFile, createFolder, and moveItem can create and move items into & out of folders.
 -- Confirmed SAT.
 // test expect { createAndMoveSat: {createAndMoveTraces} for exactly 3 Person,
-//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer, 
+//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
 //     exactly 1 EmailServer, exactly 2 Inbox,
 //     5 Item, 3 File, 3 Folder,
 //     2 EmailContent, 2 Email
@@ -455,7 +457,7 @@ pred moveSharedViolationTraces {
 -- Test that moveItem can properly copy shared_with relations.
 -- Confirmed SAT.
 // test expect { moveSharedTracesSat: {moveSharedTraces} for exactly 3 Person,
-//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer, 
+//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
 //     exactly 1 EmailServer, exactly 2 Inbox,
 //     3 Item, 1 File, 2 Folder,
 //     0 EmailContent, 0 Email
@@ -464,7 +466,7 @@ pred moveSharedViolationTraces {
 -- Test that moveItem properly copies folder shares to moved files.
 -- Confirmed UNSAT.
 // test expect { moveSharedViolationTracesUnsat: {moveSharedViolationTraces} for exactly 3 Person,
-//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer, 
+//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
 //     exactly 1 EmailServer, exactly 2 Inbox,
 //     3 Item, 1 File, 2 Folder,
 //     0 EmailContent, 0 Email
@@ -490,7 +492,7 @@ pred shareFilesFinal {
         }
 
         some e2.from
-        some e2.to 
+        some e2.to
     }
 }
 
@@ -551,7 +553,7 @@ pred shareFilesViolationTraces {
 -- Test that all the share transitions can produce a valid share.
 -- Confirmed SAT.
 // test expect { shareFilesTracesSat: {shareFilesTraces} for exactly 3 Person,
-//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer, 
+//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
 //     exactly 1 EmailServer, exactly 2 Inbox,
 //     4 Item, 2 File, 2 Folder,
 //     2 EmailContent, 2 Email
@@ -560,7 +562,7 @@ pred shareFilesViolationTraces {
 -- Test that all the share transitions cannot violate modelProperties.
 -- Suspected UNSAT, run hasn't finished.
 // test expect { shareFilesViolationTracesUnsat: {shareFilesViolationTraces} for exactly 3 Person,
-//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer, 
+//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
 //     exactly 1 EmailServer, exactly 2 Inbox,
 //     4 Item, 2 File, 2 Folder,
 //     2 EmailContent, 2 Email
@@ -613,7 +615,7 @@ pred sendFilesTraces {
 -- Test that all the send transitions can produce a valid folder send.
 -- Confirmed SAT.
 test expect { sendFilesTracesSat: {sendFilesTraces} for exactly 3 Person,
-    exactly 5 Location, exactly 2 Drive, exactly 2 Computer, 
+    exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
     exactly 1 EmailServer, exactly 2 Inbox,
     4 Item, 2 File, 2 Folder,
     1 EmailContent, 1 Email

@@ -5,28 +5,29 @@ constraints:
   - group:
       field: folder_items
       target: domain
-  - orientation:
-      appliesTo:
-        - Location
-        - Item
-      field: location_items
-      directions:
-        - below
-  - orientation:
-      appliesTo:
-        - EmailContent
-        - Email
-      field: email_content
-      directions:
-        - below
 directives:
   - flag: hideDisconnectedBuiltIns
   - color:
       sig: Folder
-      value: '#008040'
+      value: '#004D40'
   - color:
       sig: Inbox
-      value: '#ff0000'
+      value: '#D81B60'
+  - color:
+      sig: Location
+      value: '#D81B60'
+  - color:
+      sig: Person
+      value: '#1E88E5'
+  - color:
+      sig: Email
+      value: '#FFC107'
+  - color:
+      sig: EmailContent
+      value: '#FFC107'
+  - color:
+      sig: File
+      value: '#000000'
   - attribute:
       field: power_state
   - attribute:
