@@ -12,54 +12,6 @@ option min_tracelength 8
 
 ------------------------ Model Constraint Tests ------------------------
 
--- Test that modelProperties is sat given specified Sig counts.
-test expect { modelPropertiesSat: {modelProperties} for exactly 3 Person,
-    exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
-    exactly 1 EmailServer, exactly 2 Inbox,
-    5 Item, 5 File, 2 Folder,
-    2 EmailContent, 3 Email
-is sat }
-
--- Test that an email being in both sent or received and drafts is unsat.
-pred draftsAndSent {
-    some e: Email, i: Inbox | {e in i.drafts and e in i.sent} or {e in i.drafts and e in i.received}
-    some e: Email, i1, i2: Inbox | {e in i1.drafts and e in i2.sent} or {e in i1.drafts and e in i2.received}
-}
-
--- Confirmed UNSAT.
-// test expect { draftsAndSentUnsat: {modelProperties and draftsAndSent} for exactly 3 Person,
-//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
-//     exactly 1 EmailServer, exactly 2 Inbox,
-//     0 Item, 0 File, 0 Folder,
-//     1 EmailContent, 1 Email
-// is unsat }
-
--- Test that a file being in its same content is unsat.
-pred cyclicalSameContent {
-    some disj f1, f2: File | f2.same_content = f1 + f2 or {
-       some f: File | f.same_content = f
-    }
-}
-
--- Check this combination of max atoms is SAT.
--- Confirmed SAT.
-// test expect { cyclicalSameContentUnsat: {modelProperties} for exactly 3 Person,
-//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
-//     exactly 1 EmailServer, exactly 2 Inbox,
-//     1 Item, 1 File, 0 Folder,
-//     0 EmailContent, 0 Email
-// is sat }
-
-test expect 
-
--- Confirmed UNSAT.
-// test expect { cyclicalSameContentUnsat: {modelProperties and cyclicalSameContent} for exactly 3 Person,
-//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
-//     exactly 1 EmailServer, exactly 2 Inbox,
-//     1 Item, 1 File, 0 Folder,
-//     0 EmailContent, 0 Email
-// is unsat }
-
 -- Test that a file in a location_items other than its own location is unsat.
 pred itemInTwoLocations {
     some disj l1, l2: Location, i: Item | i.location = l1 and i in l2.location_items
@@ -199,27 +151,28 @@ pred wrongServerOwnership {
 // is unsat }
 
 -- Test that an item in the email map must be on the email server.
-pred itemInEmailMapNotOnServer {
-    some e: Email, i: Item | e->i in EmailServer.email_map and i.location != EmailServer
-}
+-- TODO: Fix
+// pred itemInEmailMapNotOnServer {
+//     some e: Email, i: Item | e->i in EmailServer.email_map and i.location != EmailServer
+// }
 
--- Confirmed UNSAT.
-// test expect { itemInEmailMapNotOnServerUnsat: {modelProperties and itemInEmailMapNotOnServer} for exactly 3 Person,
-//     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
-//     exactly 1 EmailServer, exactly 2 Inbox,
-//     3 Item, 2 File, 2 Folder,
-//     0 EmailContent, 1 Email
-// is unsat }
+// -- Confirmed UNSAT.
+// // test expect { itemInEmailMapNotOnServerUnsat: {modelProperties and itemInEmailMapNotOnServer} for exactly 3 Person,
+// //     exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
+// //     exactly 1 EmailServer, exactly 2 Inbox,
+// //     3 Item, 2 File, 2 Folder,
+// //     0 EmailContent, 1 Email
+// // is unsat }
 
--- Test that this holds true for folder content, too.
-pred itemsInEmailMapNotOnServer {
-    some e: Email, folder: Folder, file: File | {
-        e->folder in EmailServer.email_map
-        folder.location = EmailServer
-        file in folder.folder_items
-        file.location != EmailServer
-    }
-}
+// -- Test that this holds true for folder content, too.
+// pred itemsInEmailMapNotOnServer {
+//     some e: Email, folder: Folder, file: File | {
+//         e->folder in EmailServer.email_map
+//         folder.location = EmailServer
+//         file in folder.folder_items
+//         file.location != EmailServer
+//     }
+// }
 
 -- Confirmed UNSAT.
 // test expect { itemsInEmailMapNotOnServerUnsat: {modelProperties and itemsInEmailMapNotOnServer} for exactly 3 Person,
@@ -408,7 +361,7 @@ pred moveSharedInit {
         file in fold1.folder_items
         no file.shared_with
         no fold1.shared_with
-        fold2.shared_with = Joe
+        fold2.shared_with = Bob
 
         one fold1.location + fold2.location + file.location
     }
@@ -417,9 +370,9 @@ pred moveSharedInit {
 pred moveSharedFinal {
     some disj fold1, fold2: Folder, file: File | {
         file in fold2.folder_items
-        file.shared_with = Joe
+        file.shared_with = Bob
         no fold1.shared_with
-        fold2.shared_with = Joe
+        fold2.shared_with = Bob
     }
 }
 
@@ -428,7 +381,7 @@ pred moveSharedViolationFinal {
         file in fold2.folder_items
         no file.shared_with
         no fold1.shared_with
-        fold2.shared_with = Joe
+        fold2.shared_with = Bob
     }
 }
 

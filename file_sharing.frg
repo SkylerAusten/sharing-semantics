@@ -118,7 +118,9 @@ pred modelProperties {
     // all disj f1, f2: File |
 	// 	f2 in f1.^same_content implies f2 in f1.same_content
 
-    all disj f1, f2, f3: File | (f1 in f2.same_content and f2 in f3.same_content) implies f1 in f3.same_content
+    all disj f1, f2, f3: File |
+        (f1 in f2.same_content and f2 in f3.same_content)
+        implies f1 in f3.same_content
 
     -- No item can be in more than one folder's items.
     no disj f1, f2: Folder, i: Item |
