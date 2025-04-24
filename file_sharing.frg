@@ -4,9 +4,8 @@
 option run_sterling "viz.js"
 
 -- Trace Length
-option max_tracelength 8 -- Max Trace Length
-option min_tracelength 4 -- Min Trace Length
--- TODO: Change
+option max_tracelength 15 -- Max Trace Length
+option min_tracelength 1 -- Min Trace Length
 
 -- UNSAT Resolver (uncomment to use)
 // option solver MiniSatProver
@@ -18,8 +17,7 @@ option min_tracelength 4 -- Min Trace Length
 
 sig Person {}
 
-one sig Alice, Bob, Server extends Person {}
--- TODO: Remove
+one sig Server extends Person {}
 
 abstract sig Location {
     var location_owner: one Person,
@@ -30,11 +28,7 @@ sig Drive extends Location {
     var shared_with_me: set Item
 }
 
-one sig AliceDrive, BobDrive extends Drive {}
-
 sig Computer extends Location {}
-
-one sig AliceComputer, BobComputer extends Computer {}
 
 sig EmailServer extends Location {}
 
@@ -79,8 +73,6 @@ sig Inbox {
     var threads: set Email->Email
 }
 
-one sig AliceInbox, BobInbox extends Inbox {}
-
 ------------------------ Constraints ------------------------
 
 pred modelProperties {
@@ -115,8 +107,8 @@ pred modelProperties {
     all disj f1, f2: File | f2 in f1.same_content iff { f1 in f2.same_content }
 
     // -- same_content is transitively closed.
-    // all disj f1, f2: File |
-	// 	f2 in f1.^same_content implies f2 in f1.same_content
+    all disj f1, f2: File |
+		f2 in f1.^same_content implies f2 in f1.same_content
 
     all disj f1, f2, f3: File |
         (f1 in f2.same_content and f2 in f3.same_content)
@@ -181,17 +173,6 @@ pred modelProperties {
     all disj i1, i2: Inbox, e: Email | e in i1.drafts implies {
         e not in (i2.sent + i2.received + i1.sent + i1.received + i2.drafts)
     }
-}
-
-pred ownership {
-    AliceDrive in Drive implies {AliceDrive.location_owner = Alice}
-    BobDrive in Drive implies {BobDrive.location_owner = Bob}
-
-    AliceComputer in Computer implies {AliceComputer.location_owner = Alice}
-    BobComputer in Computer implies {BobComputer.location_owner = Bob}
-
-    AliceInbox in Inbox implies {AliceInbox.inbox_owner = Alice}
-    BobInbox in Inbox implies {BobInbox.inbox_owner = Bob}
 }
 
 ---------------------- Framing Helpers ----------------------
@@ -672,10 +653,6 @@ pred setRecipients[actor: Person, email: Email, recipients: Person] {
 
     -- The email's to cannot already be recipients.
     email.to != recipients
-
-    -- An email can't be sent to one's self.
-    -- TODO: Remove and account for in send/attach.
-    actor not in recipients
 
     -- Action(s):
     -- Set the specified email's recipients.
@@ -1186,16 +1163,6 @@ pred removeEmailContent[actor: Person, email: Email] {
     some email.email_content
 
     -- Action(s):
-    -- If email content is text...
-
-    -- If email content is a link...
-
-    -- If email content is an attachment...
-    -- TODO: attachment
-    -- Delete the item(s) in the EmailServer.
-
-    -- Delete the email server item mapping.
-
     -- Specify there's no email content.
     no email.email_content'
 
@@ -1355,8 +1322,6 @@ pred sendEmail[actor: Person, email: Email] {
     -- No emails or their properties change.
     nochange_Emails_and_properties
 }
-
-// TODO: Test everything below.
 
 pred sendReply[actor: Person, email: Email, reply_to: Email] {
     -- Guard(s):
@@ -1889,72 +1854,11 @@ pred noItemsOrEmails {
     no EmailContent
 }
 
-pred aliceCreatedComputerFile {
-	some f: File | {
-		f.item_owner = Alice
-		f.item_creator = Alice
-		f.location = AliceComputer
-		no f.shared_with
-	}
-
-    no Email
-    no same_content
-}
-
-pred aliceUploadedFile {
-	some disj f1, f2: File | {
-		f1.item_owner = Alice
-		f1.location = AliceComputer
-
-		f2.item_owner = Alice
-		f2.location = AliceDrive
-
-		f2 in f1.same_content
-	}
-
-    no Email
-}
-
-pred aliceFileSharedWithBob {
-	some f: File, l: Link, e: Email | {
-		f.item_owner = Alice
-		f.location = AliceDrive
-		Bob in f.shared_with
-		f in BobDrive.shared_with_me
-
-		e in AliceInbox.sent
-		e.from = Alice
-		e.to = Bob
-		e.email_content = l
-		l.points_to = f
-	}
-}
-
 pred twoFilesInFolder {
     some disj f1, f2: File, fold: Folder | {
         f1 in fold.folder_items
         f2 in fold.folder_items
     }
-}
-
-pred fileInBobDrive {
-    some f: File | f in BobDrive.location_items
-
-}
-
-pred emailSentWithAttachment {
-    some e: Email | {
-        some e.to
-        some e.from
-        some e.email_content
-        e.email_content in Attachment
-        some f: Folder | {
-            some f.folder_items
-            e.email_content.attached = f
-        }
-    }
-
-    some sent
 }
 
 pred someSharedFile {
@@ -1965,7 +1869,12 @@ pred editsMade {
     eventually { some same_content and eventually { no same_content } }
 }
 
---
+pred recipientsAndNoLink {
+    some e: Email | {
+        some e.to
+        no e.email_content
+    }
+}
 
 pred allTransitions {
     always {
@@ -2030,18 +1939,17 @@ pred initState {
 }
 
 pred midStates {
-    eventually { aliceCreatedComputerFile and eventually { aliceUploadedFile } }
+    editsMade
 }
 
 pred finalState {
-    aliceFileSharedWithBob
+    twoFilesInFolder
 }
 
 pred testTraces {
     initState
-    modelProperties and ownership
-    // next_state {not modelProperties}
-    limitedTransitions
+    modelProperties
+    allTransitions
     eventually {midStates}
     eventually {always {finalState}}
 }
