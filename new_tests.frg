@@ -121,103 +121,257 @@ assert transitiveClosure2 is necessary for transitiveClosure1
     3 EmailContent, 3 Email
 
 
+-- Test that a file in a location_items other than its own location is UNSAT.
+pred itemInTwoLocations {
+    some disj l1, l2: Location, i: Item | i.location = l1 and i in l2.location_items
+}
 
+test expect { itemInTwoLocationsUnsat: {modelProperties and itemInTwoLocations}
+    for exactly 3 Person,
+    exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
+    exactly 1 EmailServer, exactly 2 Inbox,
+    5 Item, 5 File, 2 Folder,
+    3 EmailContent, 3 Email
+is unsat }
 
+-- Test that a file being on a computer and being shared with someone is UNSAT.
+pred sharedComputerItem {
+    some i: Item | i.location in Computer and some i.shared_with or {
+        some i: Item | i.location in Computer and i in Drive.shared_with_me
+    }
+}
 
+test expect { sharedComputerItemUnsat: {modelProperties and sharedComputerItem}
+    for exactly 3 Person,
+    exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
+    exactly 1 EmailServer, exactly 2 Inbox,
+    5 Item, 5 File, 2 Folder,
+    3 EmailContent, 3 Email
+is unsat }
 
+-- Test that an item cannot be shared with its owner.
+pred itemSharedWithOwner {
+    some i: Item | i.item_owner in i.shared_with
+}
 
-    // -- An email in an inbox's drafts implies the email is "from" the inbox owner.
-    // all e: Email, i: Inbox | {e in i.drafts implies e.from = i.inbox_owner}
+test expect { itemSharedWithOwnerUnsat: {modelProperties and itemSharedWithOwner}
+    for exactly 3 Person,
+    exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
+    exactly 1 EmailServer, exactly 2 Inbox,
+    5 Item, 5 File, 2 Folder,
+    3 EmailContent, 3 Email
+is unsat }
 
-    // -- An email in an inbox's sent implies the email is "from" the inbox owner.
-    // all e: Email, i: Inbox | {e in i.sent implies e.from = i.inbox_owner}
+-- Test that an item's location must have the same location_owner as the item's item_owner.
+pred mismatchedItemLocationOwner {
+    some i: Item | i.location.location_owner != i.item_owner
+}
 
-    // -- A file cannot have the same content as itself.
-    // no f: File | f in f.same_content
+test expect { mismatchedItemLocationOwnerUnsat: {modelProperties and mismatchedItemLocationOwner}
+    for exactly 3 Person,
+    exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
+    exactly 1 EmailServer, exactly 2 Inbox,
+    5 Item, 5 File, 2 Folder,
+    3 EmailContent, 3 Email
+is unsat }
 
-    // -- All items specified as being at a given location will be in that location's location_items set.
-    // all l: Location, i: Item | i in l.location_items iff {i.location = l}
+-- All same_content relations are reciprocal.
+pred nonReciprocalSameContent {
+    some disj f1, f2: File | f2 in f1.same_content and not (f1 in f2.same_content)
+}
 
-    // -- A item must be in a drive to be shared with someone.
-    // all i: Item | some i.shared_with implies {i.location in Drive}
+test expect { nonReciprocalSameContentUnsat: {modelProperties and nonReciprocalSameContent}
+    for exactly 3 Person,
+    exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
+    exactly 1 EmailServer, exactly 2 Inbox,
+    5 Item, 5 File, 2 Folder,
+    3 EmailContent, 3 Email
+is unsat }
 
-    // -- An item cannot be shared with its owner.
-    // no i: Item | i.item_owner in i.shared_with
+-- Two transitions cannot be taken in one step.
+pred twoTransitionsOneStep {
+  some p: Person - Server, l: Location, f: File, folder: Folder, e: Email, r: Person, i: Item |
+    (createFile[p, l] and createEmail[p]) or
+    (createFile[p, l] and moveItem[p, f, folder]) or
+    (moveItem[p, f, folder] and setRecipients[p, e, r]) or
+    (createEmail[p] and addLink[p, i, e]) or
+    (sendEmail[p, e] and duplicateFile[p, f])
+    -- Add other pairs of transitions.
+}
 
-    // -- No file can be both in someone's drive & that drive's shared_with_me.
-    // no i: Item, d: Drive | i in d.location_items and i in d.shared_with_me
+test expect {
+  noTwoTransitionsSameStep: {modelProperties and twoTransitionsOneStep}
+  for exactly 3 Person,
+      exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
+      exactly 1 EmailServer, exactly 2 Inbox,
+      5 Item, 5 File, 2 Folder,
+      3 EmailContent, 3 Email
+  is unsat
+}
 
-    // -- An item's location must have the same location_owner as the item's item_owner.
-    // all f: Item | f.location.location_owner = f.item_owner
+pred duplicateEmailContent {
+    some disj e1, e2: Email | e1.email_content = e2.email_content
+}
 
-    // -- All items must have the same location as the folder they're in.
-    // all file: File, folder: Folder | file in folder.folder_items implies file.location = folder.location
+-- Test that an item must be in a drive to be in another drive's shared_with_me.
+pred itemNotInDriveButShared {
+    some i: Item | i not in Drive.location_items and i in Drive.shared_with_me
+}
 
-    // -- All same_content relations are symmetric.
-    // all disj f1, f2: File | f2 in f1.same_content iff { f1 in f2.same_content }
+test expect {
+  itemNotInDriveButSharedUnsat: {modelProperties and itemNotInDriveButShared}
+  for exactly 3 Person,
+      exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
+      exactly 1 EmailServer, exactly 2 Inbox,
+      5 Item, 5 File, 2 Folder,
+      3 EmailContent, 3 Email
+  is unsat
+}
 
-    // // -- same_content is transitively closed.
-    // // all disj f1, f2: File |
-	// // 	f2 in f1.^same_content implies f2 in f1.same_content
+-- That that the email server must be owned by the Server person.
+pred wrongServerOwnership {
+    EmailServer.location_owner != Server
+}
 
-    // all disj f1, f2, f3: File | (f1 in f2.same_content and f2 in f3.same_content) implies f1 in f3.same_content
+test expect {
+  wrongServerOwnershipUnsat: {modelProperties and wrongServerOwnership}
+  for exactly 3 Person,
+      exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
+      exactly 1 EmailServer, exactly 2 Inbox,
+      5 Item, 5 File, 2 Folder,
+      3 EmailContent, 3 Email
+  is unsat
+}
 
-    // -- No item can be in more than one folder's items.
-    // no disj f1, f2: Folder, i: Item |
-    //     (i in f1.folder_items) and (i in f2.folder_items)
+-- Test that an attached item must be on the email server.
+pred attachedItemNotOnServer {
+    some a: Attachment | (a.attached.location != EmailServer or a.attached.^folder_items.location != EmailServer)
+}
 
-    // -- No item can be in more than one location's location_items.
-    // no disj l1, l2: Location, i: Item |
-    //     (i in l1.location_items) and (i in l2.location_items)
+-- Test that a linked item must be in a Drive.
+pred linkedItemNotInDrive {
+    some l: Link | l.points_to.location not in Drive or l.points_to.^folder_items.location not in Drive
+}
 
-    // -- An foler cannot be in its own folder_items or any child folders's items.
-    // no f: Folder | f in f.^folder_items
+test expect {
+  linkedItemNotInDriveUnsat: {modelProperties and linkedItemNotInDrive}
+  for exactly 3 Person,
+      exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
+      exactly 1 EmailServer, exactly 2 Inbox,
+      5 Item, 5 File, 2 Folder,
+      3 EmailContent, 3 Email
+  is unsat
+}
 
-    // -- One person can only own one computer, one drive, and one inbox.
-    // -- And all computers, drives, and inboxes must be owned.
-    // #{Computer.location_owner} = #{Computer}
-    // #{Drive.location_owner} = #{Drive}
-    // #{Inbox.inbox_owner} = #{Inbox}
+-- Test that an email in drafts cannot be in any inbox's sent or received.
+pred emailInDraftsAndSentOrReceived {
+    some disj i1, i2: Inbox, e: Email | e in i1.drafts and (e in i2.sent or e in i2.received or e in i1.sent or e in i1.received)
+}
 
-    // -- No two emails can have the same content.
-    // no disj e1, e2: Email | {e1.email_content = e2.email_content and {e1.email_content + e2.email_content} != none }
+test expect {
+  emailInDraftsAndSentOrReceivedUnsat: {modelProperties and emailInDraftsAndSentOrReceived}
+  for exactly 3 Person,
+      exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
+      exactly 1 EmailServer, exactly 2 Inbox,
+      5 Item, 5 File, 2 Folder,
+      3 EmailContent, 3 Email
+  is unsat
+}
 
-    // -- A item must be in a drive to be in another drive's shared_with_me.
-    // all i: Item | { i in Drive.shared_with_me implies {i.location in Drive}}
+-- Test that Server cannot own a Drive, Computer, or Inbox.
+pred serverOwnsProhibitedLocations {
+    some d: Drive | d.location_owner = Server or {
+        some c: Computer | c.location_owner = Server
+    } or {
+        some i: Inbox | i.inbox_owner = Server
+    }
+}
 
-    // -- An item shared with someone must be in that person's drive's shared_with_me.
-    // all i: Item, p: Person | {p in i.shared_with iff {i in ((location_owner.p) & Drive).shared_with_me}}
+test expect {
+  serverOwnsProhibitedLocationsUnsat: {modelProperties and serverOwnsProhibitedLocations}
+  for exactly 3 Person,
+      exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
+      exactly 1 EmailServer, exactly 2 Inbox,
+      5 Item, 5 File, 2 Folder,
+      3 EmailContent, 3 Email
+  is unsat
+}
 
-    // -- An item NOT shared with someone must NOT be in that person's drive's shared_with_me.
-    // all i: Item, p: Person | {p not in i.shared_with implies {i not in ((location_owner.p) & Drive).shared_with_me}}
+-- Test that all items in folders must have the same location as the folder.
+pred itemFolderLocationMismatch {
+    some file: File, folder: Folder | file in folder.folder_items and file.location != folder.location
+}
 
-    // -- An item in a folder must inherit the folder's shared_with.
-    // no file: File, folder: Folder | file in folder.folder_items and folder.shared_with not in file.shared_with
+test expect {
+  itemFolderLocationMismatchUnsat: {modelProperties and itemFolderLocationMismatch}
+  for exactly 3 Person,
+      exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
+      exactly 1 EmailServer, exactly 2 Inbox,
+      5 Item, 5 File, 2 Folder,
+      3 EmailContent, 3 Email
+  is unsat
+}
 
-    // -- The email server must be owned by the Server person.
-    // EmailServer in Location implies {EmailServer.location_owner = Server}
+-- Test the sharing bijection for shared_with_me.
+pred shareImplies {
+    -- An item shared with someone must be in that person's drive's shared_with_me.
+    all i: Item, p: Person | {p in i.shared_with implies {i in ((location_owner.p) & Drive).shared_with_me}}
 
-    // -- An attached item must be on the email server.
-    // all a: Attachment | a.attached.location = EmailServer
+    -- An item NOT shared with someone must NOT be in that person's drive's shared_with_me.
+    all i: Item, p: Person | {p not in i.shared_with implies {i not in ((location_owner.p) & Drive).shared_with_me}}
+}
 
-    // -- A linked item must be in a Drive.
-    // all l: Link | l.points_to.location in Drive
+assert modelProperties is sufficient for shareImplies
+  for exactly 3 Person,
+      exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
+      exactly 1 EmailServer, exactly 2 Inbox,
+      5 Item, 5 File, 2 Folder,
+      3 EmailContent, 3 Email
 
-    // -- An email in sent or received must have some content & some "to."
-    // all e: Email, i: Inbox | (e in i.sent or e in i.received) implies some e.email_content and some e.to
+-- Test that doNothing cannot violate modelProperties or ownership or create new Items, Emails, or EmailContents.
+pred doNothingTraces {
+    {no Item and no Email and no EmailContent}
+    modelProperties
+    always {doNothing}
+    eventually {not modelProperties or {
+        some Item or some Email or some EmailContent
+    }}
+}
 
-    // -- All email content must have some associated email.
-    // all ec: EmailContent | some e: Email | e.email_content = ec
+test expect {
+  doNothingTracesUnsat: {doNothingTraces}
+  for exactly 3 Person,
+      exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
+      exactly 1 EmailServer, exactly 2 Inbox,
+      5 Item, 5 File, 2 Folder,
+      3 EmailContent, 3 Email
+  is unsat
+}
 
-    // -- Server cannot own a Drive, Computer, or Inbox.
-    // no d: Drive | d.location_owner = Server
-    // no c: Computer | c.location_owner = Server
-    // no i: Inbox | i.inbox_owner = Server
+-- Test that createFile, createFolder, and moveItem cannot violate modelProperties or ownership or create new Emails or EmailContents.
+pred createAndMoveViolationTraces {
+    {no Item and no Email and no EmailContent}
+    modelProperties
+    always {
+        doNothing or {
+            some p: (Person - Server), l: Location | { createFile[p, l] }
+        } or {
+            some p: (Person - Server), l: Location | { createFolder[p, l] }
+        } or {
+            some p: Person, m: File, d: Folder | { moveItem[p, m, d] }
+        }
+    }
+    eventually {not modelProperties or {
+       some Email or some EmailContent
+    }}
+}
 
-    // -- Every email must have some "from".
-    // all e: Email | some e.from
-
-    // -- An email in drafts cannot be in any inbox's sent or received.
-    // all disj i1, i2: Inbox, e: Email | e in i1.drafts implies {
-    //     e not in (i2.sent + i2.received + i1.sent + i1.received + i2.drafts)
-    // }
+test expect {
+  createAndMoveViolationTracesUnsat: {createAndMoveViolationTraces}
+  for exactly 3 Person,
+      exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
+      exactly 1 EmailServer, exactly 2 Inbox,
+      5 Item, 5 File, 2 Folder,
+      3 EmailContent, 3 Email
+  is unsat
+}
