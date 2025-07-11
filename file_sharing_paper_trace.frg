@@ -6,7 +6,6 @@ option run_sterling "viz.js"
 -- Trace Length
 option max_tracelength 8 -- Max Trace Length
 option min_tracelength 4 -- Min Trace Length
--- TODO: Change
 
 -- UNSAT Resolver (uncomment to use)
 // option solver MiniSatProver
@@ -19,7 +18,6 @@ option min_tracelength 4 -- Min Trace Length
 sig Person {}
 
 one sig Alice, Bob, Server extends Person {}
--- TODO: Remove
 
 abstract sig Location {
     var location_owner: one Person,
@@ -30,7 +28,11 @@ sig Drive extends Location {
     var shared_with_me: set Item
 }
 
+one sig AliceDrive, BobDrive extends Drive {}
+
 sig Computer extends Location {}
+
+one sig AliceComputer, BobComputer extends Computer {}
 
 sig EmailServer extends Location {}
 
@@ -75,6 +77,8 @@ sig Inbox {
     var threads: set Email->Email
 }
 
+one sig AliceInbox, BobInbox extends Inbox {}
+
 ------------------------ Constraints ------------------------
 
 pred modelProperties {
@@ -109,8 +113,8 @@ pred modelProperties {
     all disj f1, f2: File | f2 in f1.same_content iff { f1 in f2.same_content }
 
     // -- same_content is transitively closed.
-    // all disj f1, f2: File |
-	// 	f2 in f1.^same_content implies f2 in f1.same_content
+    all disj f1, f2: File |
+		f2 in f1.^same_content implies f2 in f1.same_content
 
     all disj f1, f2, f3: File |
         (f1 in f2.same_content and f2 in f3.same_content)
@@ -168,10 +172,6 @@ pred modelProperties {
     no c: Computer | c.location_owner = Server
     no i: Inbox | i.inbox_owner = Server
 
-    -- Google cannot own a Location or Inbox.
-    no l: Location | l.location_owner = Google
-    no i: Inbox | i.inbox_owner = Google
-
     -- Every email must have some "from".
     all e: Email | some e.from
 
@@ -179,6 +179,17 @@ pred modelProperties {
     all disj i1, i2: Inbox, e: Email | e in i1.drafts implies {
         e not in (i2.sent + i2.received + i1.sent + i1.received + i2.drafts)
     }
+}
+
+pred ownership {
+    AliceDrive in Drive implies {AliceDrive.location_owner = Alice}
+    BobDrive in Drive implies {BobDrive.location_owner = Bob}
+
+    AliceComputer in Computer implies {AliceComputer.location_owner = Alice}
+    BobComputer in Computer implies {BobComputer.location_owner = Bob}
+
+    AliceInbox in Inbox implies {AliceInbox.inbox_owner = Alice}
+    BobInbox in Inbox implies {BobInbox.inbox_owner = Bob}
 }
 
 ---------------------- Framing Helpers ----------------------
@@ -329,8 +340,7 @@ pred nochange_Inbox_properties {
 pred doNothing {
     -- Guard(s):
     // -- This should only run when the model is in its final state.
-    -- TODO: Figure out how to do this final state req.
-    // finalState
+    finalState
 
     -- Action(s):
     -- No persons change.
@@ -1330,8 +1340,6 @@ pred sendEmail[actor: Person, email: Email] {
     nochange_Emails_and_properties
 }
 
-// TODO: Test everything below.
-
 pred sendReply[actor: Person, email: Email, reply_to: Email] {
     -- Guard(s):
     -- The actor cannot be server.
@@ -1939,7 +1947,12 @@ pred editsMade {
     eventually { some same_content and eventually { no same_content } }
 }
 
---
+pred recipientsAndNoLink {
+    some e: Email | {
+        some e.to
+        no e.email_content
+    }
+}
 
 pred allTransitions {
     always {
@@ -2004,7 +2017,13 @@ pred initState {
 }
 
 pred midStates {
-    eventually { aliceCreatedComputerFile and eventually { aliceUploadedFile } }
+    eventually {
+        aliceCreatedComputerFile and eventually {
+            aliceUploadedFile and eventually {
+                recipientsAndNoLink
+            }
+        }
+    }
 }
 
 pred finalState {
@@ -2014,7 +2033,6 @@ pred finalState {
 pred testTraces {
     initState
     modelProperties and ownership
-    // next_state {not modelProperties}
     limitedTransitions
     eventually {midStates}
     eventually {always {finalState}}
