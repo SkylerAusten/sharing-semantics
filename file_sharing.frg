@@ -1,25 +1,10 @@
 #lang forge/temporal
 
-// Pre-load the vizualization script
-option run_sterling "viz.js"
-
--- Trace Length
-option max_tracelength 8 -- Max Trace Length
-option min_tracelength 4 -- Min Trace Length
--- TODO: Change
-
--- UNSAT Resolver (uncomment to use)
-// option solver MiniSatProver
-// option core_minimization rce
-// option logtranslation 1
-// option coregranularity 1
-
 ------------------------ Sigs ------------------------
 
 sig Person {}
 
-one sig Alice, Bob, Server extends Person {}
--- TODO: Remove
+one sig Server, Google extends Person {}
 
 abstract sig Location {
     var location_owner: one Person,
@@ -30,11 +15,7 @@ sig Drive extends Location {
     var shared_with_me: set Item
 }
 
-one sig AliceDrive, BobDrive extends Drive {}
-
 sig Computer extends Location {}
-
-one sig AliceComputer, BobComputer extends Computer {}
 
 sig EmailServer extends Location {}
 
@@ -79,8 +60,6 @@ sig Inbox {
     var threads: set Email->Email
 }
 
-one sig AliceInbox, BobInbox extends Inbox {}
-
 ------------------------ Constraints ------------------------
 
 pred modelProperties {
@@ -115,6 +94,7 @@ pred modelProperties {
     all disj f1, f2: File | f2 in f1.same_content iff { f1 in f2.same_content }
 
     // -- same_content is transitively closed.
+    -- TODO: Test this is equiv to the above.
     // all disj f1, f2: File |
 	// 	f2 in f1.^same_content implies f2 in f1.same_content
 
@@ -174,6 +154,10 @@ pred modelProperties {
     no c: Computer | c.location_owner = Server
     no i: Inbox | i.inbox_owner = Server
 
+    -- Google cannot own a Location or Inbox.
+    no l: Location | l.location_owner = Google
+    no i: Inbox | i.inbox_owner = Google
+
     -- Every email must have some "from".
     all e: Email | some e.from
 
@@ -181,17 +165,6 @@ pred modelProperties {
     all disj i1, i2: Inbox, e: Email | e in i1.drafts implies {
         e not in (i2.sent + i2.received + i1.sent + i1.received + i2.drafts)
     }
-}
-
-pred ownership {
-    AliceDrive in Drive implies {AliceDrive.location_owner = Alice}
-    BobDrive in Drive implies {BobDrive.location_owner = Bob}
-
-    AliceComputer in Computer implies {AliceComputer.location_owner = Alice}
-    BobComputer in Computer implies {BobComputer.location_owner = Bob}
-
-    AliceInbox in Inbox implies {AliceInbox.inbox_owner = Alice}
-    BobInbox in Inbox implies {BobInbox.inbox_owner = Bob}
 }
 
 ---------------------- Framing Helpers ----------------------
@@ -342,7 +315,8 @@ pred nochange_Inbox_properties {
 pred doNothing {
     -- Guard(s):
     // -- This should only run when the model is in its final state.
-    finalState
+    -- TODO: Figure out how to do this final state req.
+    // finalState
 
     -- Action(s):
     -- No persons change.
@@ -1358,6 +1332,65 @@ pred sendEmail[actor: Person, email: Email] {
 
 // TODO: Test everything below.
 
+pred shareItem[actor: Person, item: Item, recipient: Person] {
+    -- Guard(s):
+    -- The actor cannot be Server or Google.
+    actor != Server and actor != Google
+
+    -- The item must be owned by or shared with the actor.
+    (item.location in location_owner.actor) or (actor in item.shared_with)
+
+    -- Action(s):
+    -- Send an email to the recipient from Google with the item link.
+    one e: Email' - Email, link: Link' - Link | {
+        -- No other emails change.
+        Email' = Email + e
+
+        -- No other links change.
+        Link' = Link + link
+
+        -- Set the new link's properties.
+        link.points_to' = item
+
+        -- Set the new email's location to the recipient's inbox.
+        e in inbox_owner.recipient.received'
+
+        -- Ensure the recipient's inbox only gains the one new email.
+        inbox_owner.recipient.received' = inbox_owner.recipient.received + e
+
+        -- Set the new email's from field to Google.
+        e.from' = Google
+
+        -- Set the new email's to field to the recipient.
+        e.to' = recipient
+
+        -- Set the new email's content to a link to the item.
+        e.email_content' = link
+    }
+
+    -- Share the item with the recipient.
+    item.shared_with' = item.shared_with + recipient
+
+    -- Update shared_with_me for the recipient's drives.
+    all d: (location_owner.recipient & Drive) | {
+        d.shared_with_me' = d.shared_with_me + item
+    }
+
+    -- No persons change.
+    nochange_sig_Person
+
+    -- No locations change.
+    nochange_sig_Location
+
+    -- TODO: location properties.
+
+    -- TODO: Items and their properties.
+
+    -- TODO: Emails, EmailContents and their properties.
+
+    -- TODO: Inboxes and their properties.
+}
+
 pred sendReply[actor: Person, email: Email, reply_to: Email] {
     -- Guard(s):
     -- The actor cannot be server.
@@ -1880,179 +1913,3 @@ pred duplicateFile[actor: Person, file: File] {
     nochange_sig_Inbox
     nochange_Inbox_properties
 }
-
------------------------- Example States ------------------------
-
-pred noItemsOrEmails {
-    no Item
-    no Email
-    no EmailContent
-}
-
-pred aliceCreatedComputerFile {
-	some f: File | {
-		f.item_owner = Alice
-		f.item_creator = Alice
-		f.location = AliceComputer
-		no f.shared_with
-	}
-
-    no Email
-    no same_content
-}
-
-pred aliceUploadedFile {
-	some disj f1, f2: File | {
-		f1.item_owner = Alice
-		f1.location = AliceComputer
-
-		f2.item_owner = Alice
-		f2.location = AliceDrive
-
-		f2 in f1.same_content
-	}
-
-    no Email
-}
-
-pred aliceFileSharedWithBob {
-	some f: File, l: Link, e: Email | {
-		f.item_owner = Alice
-		f.location = AliceDrive
-		Bob in f.shared_with
-		f in BobDrive.shared_with_me
-
-		e in AliceInbox.sent
-		e.from = Alice
-		e.to = Bob
-		e.email_content = l
-		l.points_to = f
-	}
-}
-
-pred twoFilesInFolder {
-    some disj f1, f2: File, fold: Folder | {
-        f1 in fold.folder_items
-        f2 in fold.folder_items
-    }
-}
-
-pred fileInBobDrive {
-    some f: File | f in BobDrive.location_items
-
-}
-
-pred emailSentWithAttachment {
-    some e: Email | {
-        some e.to
-        some e.from
-        some e.email_content
-        e.email_content in Attachment
-        some f: Folder | {
-            some f.folder_items
-            e.email_content.attached = f
-        }
-    }
-
-    some sent
-}
-
-pred someSharedFile {
-    some shared_with_me
-}
-
-pred editsMade {
-    eventually { some same_content and eventually { no same_content } }
-}
-
---
-
-pred allTransitions {
-    always {
-        doNothing or {
-            some p: (Person - Server), l: Location | { createFile[p, l] }
-        } or {
-            some p: (Person - Server), l: Location | { createFolder[p, l] }
-        } or {
-            some p: Person, m: File, d: Folder | { moveItem[p, m, d] }
-        } or {
-            some p: Person | { createEmail[p] }
-        } or {
-            some p, r: Person, e: Email | { setRecipients[p, e, r] }
-        } or {
-            some p: Person, i: Item, e: Email | { addLink[p, i, e] }
-        } or {
-            some p: Person, e: Email | { sendEmail[p, e] }
-        } or {
-            some p: Person, a: File, e: Email | { attachFile[p, a, e] }
-        } or {
-            some p: Person, a: Folder, e: Email | { attachFolder[p, a, e] }
-        } or {
-            some p: Person, e: Email | { addText[p, e] }
-        } or {
-            some p: Person, f: File | { editFile[p, f] }
-        } or {
-            some p: Person, e, r: Email | sendReply[p, e, r]
-        } or {
-            some p: Person, e: Email | downloadFileAttachment[p, e]
-        } or {
-            some p: Person, f: File | { uploadFileToDrive[p, f] }
-        } or {
-            some p: Person, f: File | { downloadDriveFile[p, f] }
-        } or {
-            some p: Person, f: File | { duplicateFile[p, f] }
-        }
-    }
-}
-
-pred limitedTransitions {
-    always {
-        doNothing or {
-            some p: (Person - Server), l: Location | { createFile[p, l] }
-        } or {
-            some p: Person | { createEmail[p] }
-        } or {
-            some p, r: Person, e: Email | { setRecipients[p, e, r] }
-        } or {
-            some p: Person, i: Item, e: Email | { addLink[p, i, e] }
-        } or {
-            some p: Person, e: Email | { sendEmail[p, e] }
-        } or {
-            some p: Person, f: File | { uploadFileToDrive[p, f] }
-        }
-    }
-}
-
------------------------- Run Statements ------------------------
-
-pred initState {
-    noItemsOrEmails
-}
-
-pred midStates {
-    eventually { aliceCreatedComputerFile and eventually { aliceUploadedFile } }
-}
-
-pred finalState {
-    aliceFileSharedWithBob
-}
-
-pred testTraces {
-    initState
-    modelProperties and ownership
-    // next_state {not modelProperties}
-    limitedTransitions
-    eventually {midStates}
-    eventually {always {finalState}}
-}
-
-run {
-    testTraces
-} for exactly 3 Person, -- Should be at least 3 to exercise full functionality (Sender, Server, Recipient).
-    exactly 5 Location,
-    exactly 2 Drive, -- MUST correspond to the # of Persons.
-    exactly 2 Computer, -- MUST correspond to the # of Persons.
-    exactly 1 EmailServer, -- MUST be exactly 1.
-    exactly 2 Inbox, -- MUST correspond to the # of Persons.
-    8 Item, 7 File, 1 Folder, -- # Files and # Folders should add up to # Items, but this isn't required.
-    2 EmailContent, 2 Email -- These should be equal for all emails to be sendable, but this isn't required.
