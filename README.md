@@ -74,3 +74,6 @@ The item must be owned by or shared with the actor. The file loses all its same_
 
 ## theme.json
 When running any traces, use theme.json to hide some of the less helpful relations & atoms.
+
+Icons
+https://www.flaticon.com/free-icon/inbox_1159627
