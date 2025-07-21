@@ -4,6 +4,8 @@
 
 sig Person {}
 
+one sig Server extends Person {}
+
 abstract sig Location {
     var location_owner: one Person,
     var location_items: set Item
@@ -94,6 +96,9 @@ pred modelProperties {
     // -- same_content is transitively closed.
     // all disj f1, f2: File |
 	// 	f2 in f1.^same_content implies f2 in f1.same_content
+
+    -- Server cannot send or receieve emails.
+    no e: Email | {e.from = Server or e.to = Server}
 
     all disj f1, f2, f3: File |
         (f1 in f2.same_content and f2 in f3.same_content)
@@ -308,7 +313,6 @@ pred nochange_Inbox_properties {
 pred doNothing {
     -- Guard(s):
     // -- This should only run when the model is in its final state.
-    -- TODO: Figure out how to do this final state req.
     // finalState
 
     -- Action(s):
@@ -854,6 +858,125 @@ pred attachFile[actor: Person, item: File, email: Email] {
     nochange_Inbox_properties
 }
 
+pred shareItem[actor: Person, item: Item, target: Person] {
+    -- Guard(s):
+    actor != Server
+    target != Server
+    item.item_owner = actor
+    item.location in (location_owner.actor & Drive)
+    target not in item.shared_with
+    item in File
+
+    -- Action(s):
+    one e: (Email' - Email), l: (Link' - Link) | {
+        -- Create a new email to notify the target.
+        Email' = Email + e
+
+        -- Set the email's from to the actor.
+        e.from' = actor
+
+        -- Set the email's to to the target.
+        e.to' = target
+
+        -- Set the email's content to a link to the item.
+        Link' = Link + l
+        l.points_to' = item
+        e.email_content' = l
+
+        -- Keep all existing emails the same.
+        all oe: (Email - e) | {
+            oe.email_content = oe.email_content'
+            oe.from = oe.from'
+            oe.to = oe.to'
+        }
+
+        -- Keep all existing email contents the same.
+        all oec: (EmailContent - l) | {
+            oec.attached = oec.attached'
+            oec.points_to = oec.points_to'
+        }
+
+        EmailContent' = EmailContent + l
+
+        -- Email moves to sender's sent & recipient's received.
+        inbox_owner.actor.sent in inbox_owner.actor.sent'
+        inbox_owner.actor.sent' = inbox_owner.actor.sent + e
+
+        inbox_owner.target.received in inbox_owner.target.received'
+        inbox_owner.target.received' = inbox_owner.target.received + e
+
+        -- No inboxes change.
+        nochange_sig_Inbox
+
+        -- No inbox ownerships, drafts, or threads change (threads are updated via sendReply).
+        all i: Inbox | {
+            i.inbox_owner = i.inbox_owner'
+            i.drafts = i.drafts'
+            i.threads = i.threads'
+        }
+
+        // -- No inbox sent are changed except for the actor's.
+        all i: Inbox - (inbox_owner.actor) | {
+            i.sent = i.sent'
+        }
+
+        // -- No inbox receiveds change except for the targets.
+        all i: Inbox - (inbox_owner.target) | {
+            i.received = i.received'
+        }
+
+        -- Ensure the item's shared_with gains the target.
+        item.shared_with' = item.shared_with + target
+
+        -- All other items shared_with remain unchanged.
+        all i: (Item - item) | {
+            i.shared_with = i.shared_with'
+        }
+
+        -- And update shared_with_me.
+        all d: (location_owner.(target) & Drive) | {
+            d.shared_with_me' = d.shared_with_me + (item - d.location_items)
+        }
+
+        all d: (Drive - (location_owner.(target) & Drive)) | { d.shared_with_me' = d.shared_with_me }
+        }
+
+    -- Keep all existing items and their properties unchanged.
+    all i: Item | {
+        Item' = Item
+
+        i.item_creator = i.item_creator'
+
+        i.item_owner = i.item_owner'
+
+        i.location = i.location'
+
+        -- No file properties change.
+        i.same_content = i.same_content'
+
+        -- No folder properties change.
+        i.folder_items = i.folder_items'
+    }
+    -- Keep all existing Locations and unrelated properties unchanged.
+    nochange_sig_Location
+    all l: Location | {
+        l.location_owner = l.location_owner'
+
+        -- No drive properties change.
+        l.shared_with_me in l.shared_with_me'
+
+        -- No existing items are removed.
+        l.location_items = l.location_items'
+    }
+    -- Keep all existing Persons unchanged.
+    nochange_sig_Person
+
+    -- Keep all attachments the same.
+    all a: Attachment | {
+        a.attached = a.attached'
+    }
+}
+
 pred attachFolder[actor: Person, item: Folder, email: Email] {
     -- Guard(s):
     -- The actor cannot be server.
@@ -1308,8 +1431,6 @@ pred sendEmail[actor: Person, email: Email] {
     -- No emails or their properties change.
     nochange_Emails_and_properties
 }
-
-// TODO: Test everything below.
 
 pred sendReply[actor: Person, email: Email, reply_to: Email] {
     -- Guard(s):
@@ -1831,5 +1952,4 @@ pred duplicateFile[actor: Person, file: File] {
 
     -- No inboxes or their properties change.
     nochange_sig_Inbox
-    nochange_Inbox_properties
 }

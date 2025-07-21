@@ -35,20 +35,6 @@ pred ownership {
 }
 
 // ------------------------------------------------------------
-// Paper Goal Program
-// ------------------------------------------------------------
-// createFile[Alice, AliceDrive] // Alice creates a menu with Burgers in her Google Drive.
-//
-
-// - Alice creates menu with burgers in Google Docs.
-// - Alice gives Joe share access.
-// - Alice creates email.
-// - Alice adds Joe as recipient.
-// - Alice adds link to email body.
-// - Alice sends e-mail.
-// - Joe edits menu to be a list of salads.
-
-// ------------------------------------------------------------
 // Program-specific Goal States
 // ------------------------------------------------------------
 
@@ -58,3 +44,114 @@ pred startState {
     no Email
     no EmailContent
 }
+
+pred noItemsOrEmails {
+    no Item
+    no Email
+    no EmailContent
+}
+
+pred aliceCreatedComputerFile {
+	some f: File | {
+		f.item_owner = Alice
+		f.item_creator = Alice
+		f.location = AliceComputer
+		no f.shared_with
+	}
+
+    no Email
+    no same_content
+}
+
+pred aliceUploadedFile {
+	some disj f1, f2: File | {
+		f1.item_owner = Alice
+		f1.location = AliceComputer
+
+		f2.item_owner = Alice
+		f2.location = AliceDrive
+
+		f2 in f1.same_content
+	}
+
+    no Email
+}
+
+pred aliceFileSharedWithJoe {
+	some f: File, l: Link, e: Email | {
+		f.item_owner = Alice
+		f.location = AliceDrive
+		Joe in f.shared_with
+		f in JoeDrive.shared_with_me
+
+		e in AliceInbox.sent
+		e.from = Alice
+		e.to = Joe
+		e.email_content = l
+		l.points_to = f
+	}
+}
+
+pred recipientsAndNoLink {
+    some e: Email | {
+        some e.to
+        no e.email_content
+    }
+}
+
+pred limitedTransitions {
+    always {
+        doNothing or {
+            some p: (Person - Server), l: Location | { createFile[p, l] }
+        } or {
+            some p: Person | { createEmail[p] }
+        } or {
+            some p, r: Person, e: Email | { setRecipients[p, e, r] }
+        } or {
+            some p: Person, i: Item, e: Email | { addLink[p, i, e] }
+        } or {
+            some p: Person, e: Email | { sendEmail[p, e] }
+        } or {
+            some p: Person, f: File | { uploadFileToDrive[p, f] }
+        }
+    }
+}
+
+------------------------ Run Statements ------------------------
+
+pred initState {
+    noItemsOrEmails
+}
+
+pred midStates {
+    eventually {
+        aliceCreatedComputerFile and eventually {
+            aliceUploadedFile and eventually {
+                recipientsAndNoLink
+            }
+        }
+    }
+}
+
+pred finalState {
+    aliceFileSharedWithJoe
+}
+
+pred menuTraces {
+    initState
+    modelProperties and ownership
+    limitedTransitions
+    eventually {midStates}
+    eventually {always {finalState}}
+}
+
+run {
+    menuTraces
+} for exactly 3 Person, -- Should be at least 3 to exercise full functionality (Sender, Server, Recipient).
+    exactly 5 Location,
+    exactly 2 Drive, -- MUST correspond to the # of Persons.
+    exactly 2 Computer, -- MUST correspond to the # of Persons.
+    exactly 1 EmailServer, -- MUST be exactly 1.
+    exactly 2 Inbox, -- MUST correspond to the # of Persons.
+    8 Item, 7 File, 1 Folder, -- # Files and # Folders should add up to # Items, but this isn't required.
+    2 EmailContent, 2 Email -- These should be equal for all emails to be sendable, but this isn't required.

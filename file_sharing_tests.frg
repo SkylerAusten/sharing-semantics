@@ -3,7 +3,7 @@
 open "file_sharing.frg"
 
 option max_tracelength 12
-option min_tracelength 8
+option min_tracelength 1
 
 // option solver MiniSatProver
 // option core_minimization rce
@@ -209,17 +209,13 @@ test expect {
   is unsat
 }
 
+-- Test that two emails cannot have the same content.
 pred duplicateEmailContent {
-    some disj e1, e2: Email | e1.email_content = e2.email_content
-}
-
--- Test that an item must be in a drive to be in another drive's shared_with_me.
-pred itemNotInDriveButShared {
-    some i: Item | i not in Drive.location_items and i in Drive.shared_with_me
+    some disj e1, e2: Email | some e1.email_content and some e2.email_content and {e1.email_content = e2.email_content}
 }
 
 test expect {
-  itemNotInDriveButSharedUnsat: {modelProperties and itemNotInDriveButShared}
+  duplicateEmailContentUnsat: {modelProperties and duplicateEmailContent}
   for exactly 3 Person,
       exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
       exactly 1 EmailServer, exactly 2 Inbox,
@@ -228,29 +224,26 @@ test expect {
   is unsat
 }
 
--- That that the email server must be owned by the Server person.
-pred wrongServerOwnership {
-    EmailServer.location_owner != Server
+-- Test that Server cannot be a sender or recipient of an email.
+pred serverSenderOrRecipient {
+    some e: Email | {e.from = Server or e.to = Server}
 }
 
 test expect {
-  wrongServerOwnershipUnsat: {modelProperties and wrongServerOwnership}
+  serverSenderOrRecipientUnsat: {modelProperties and serverSenderOrRecipient}
   for exactly 3 Person,
       exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
       exactly 1 EmailServer, exactly 2 Inbox,
       5 Item, 5 File, 2 Folder,
       3 EmailContent, 3 Email
   is unsat
-}
-
--- Test that an attached item must be on the email server.
-pred attachedItemNotOnServer {
-    some a: Attachment | (a.attached.location != EmailServer or a.attached.^folder_items.location != EmailServer)
 }
 
 -- Test that a linked item must be in a Drive.
 pred linkedItemNotInDrive {
-    some l: Link | l.points_to.location not in Drive or l.points_to.^folder_items.location not in Drive
+    some l: Link | l.points_to.location not in Drive or {
+        (some l.points_to.folder_items and l.points_to.^folder_items.location not in Drive)
+    }
 }
 
 test expect {
@@ -368,6 +361,103 @@ pred createAndMoveViolationTraces {
 
 test expect {
   createAndMoveViolationTracesUnsat: {createAndMoveViolationTraces}
+  for exactly 3 Person,
+      exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
+      exactly 1 EmailServer, exactly 2 Inbox,
+      5 Item, 5 File, 2 Folder,
+      3 EmailContent, 3 Email
+  is unsat
+}
+
+-- Boop
+
+-- Test that an item must be in a drive to be in another drive's shared_with_me.
+pred itemNotInDriveButShared {
+    some i: Item | i not in Drive.location_items and i in Drive.shared_with_me
+}
+
+test expect {
+  itemNotInDriveButSharedUnsat: {modelProperties and itemNotInDriveButShared}
+  for exactly 3 Person,
+      exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
+      exactly 1 EmailServer, exactly 2 Inbox,
+      5 Item, 5 File, 2 Folder,
+      3 EmailContent, 3 Email
+  is unsat
+}
+
+-- That that the email server must be owned by the Server person.
+pred wrongServerOwnership {
+    EmailServer.location_owner != Server
+}
+
+test expect {
+  wrongServerOwnershipUnsat: {modelProperties and wrongServerOwnership}
+  for exactly 3 Person,
+      exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
+      exactly 1 EmailServer, exactly 2 Inbox,
+      5 Item, 5 File, 2 Folder,
+      3 EmailContent, 3 Email
+  is unsat
+}
+
+-- Test that an attached item must be on the email server.
+pred attachedItemNotOnServer {
+    some a: Attachment | (a.attached.location != EmailServer) or { 
+        (some a.attached.folder_items and a.attached.folder_items.location != EmailServer)
+    }
+}
+
+test expect {
+  attachedItemNotOnServerUnsat: {modelProperties and attachedItemNotOnServer}
+  for exactly 3 Person,
+      exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
+      exactly 1 EmailServer, exactly 2 Inbox,
+      5 Item, 5 File, 2 Folder,
+      3 EmailContent, 3 Email
+  is unsat
+}
+
+-- Test that createFile and shareItem is sat.
+pred createAndShareValidTraces {
+    {no Item and no Email and no EmailContent}
+    modelProperties
+    always {
+        doNothing or {
+            some p: (Person - Server), l: Location | { createFile[p, l] }
+        } or {
+            some disj p, t: (Person - Server), i: Item | { shareItem[p, i, t] }
+        }
+    }
+    eventually {some Email and some File}
+}
+
+test expect {
+  createAndShareIsSAT: {createAndShareValidTraces}
+  for exactly 3 Person,
+      exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
+      exactly 1 EmailServer, exactly 2 Inbox,
+      5 Item, 5 File, 2 Folder,
+      3 EmailContent, 3 Email
+  is sat
+}
+
+-- Test that createFile and shareItem cannot violate modelProperties.
+pred createAndShareViolationTraces {
+    {no Item and no Email and no EmailContent}
+    modelProperties
+    always {
+        doNothing or {
+            some p: (Person - Server), loc: Location | { createFile[p, loc] }
+        } or {
+            some disj p, t: (Person - Server), i: Item | { shareItem[p, i, t] }
+        }
+    }
+    eventually {not modelProperties}
+}
+
+test expect {
+  createAndMoveViolationTracesUnsat: {createAndShareViolationTraces}
   for exactly 3 Person,
       exactly 5 Location, exactly 2 Drive, exactly 2 Computer,
       exactly 1 EmailServer, exactly 2 Inbox,
