@@ -37,7 +37,7 @@ directives:
       value: '#000000'
   - icon:
       path: >-
-          https://raw.githubusercontent.com/SkylerAusten/Sharing-Semantics/refs/heads/main/file_icon.png
+          https://raw.githubusercontent.com/SkylerAusten/Sharing-Semantics/refs/heads/main/File_icon.png
       selector: File
   - icon:
       path: >-
@@ -73,5 +73,5 @@ directives:
       selector: Drive
   - icon:
       path: >-
-          https://raw.githubusercontent.com/SkylerAusten/Sharing-Semantics/refs/heads/main/File_icon.png
-      selector: File
+          https://raw.githubusercontent.com/SkylerAusten/Sharing-Semantics/refs/heads/main/Person_icon.png
+      selector: Person

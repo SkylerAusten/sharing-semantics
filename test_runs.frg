@@ -7,7 +7,6 @@ option run_sterling "viz.js"
 -- Trace Length
 option max_tracelength 8 -- Max Trace Length
 option min_tracelength 4 -- Min Trace Length
--- TODO: Change
 
 -- UNSAT Resolver (uncomment to use)
 // option solver MiniSatProver

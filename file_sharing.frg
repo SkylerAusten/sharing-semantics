@@ -93,16 +93,16 @@ pred modelProperties {
     -- All same_content relations are symmetric.
     all disj f1, f2: File | f2 in f1.same_content iff { f1 in f2.same_content }
 
-    // -- same_content is transitively closed.
+    -- same_content is transitively closed.
+    all disj f1, f2, f3: File |
+        (f1 in f2.same_content and f2 in f3.same_content)
+        implies f1 in f3.same_content
+
     // all disj f1, f2: File |
 	// 	f2 in f1.^same_content implies f2 in f1.same_content
 
     -- Server cannot send or receieve emails.
     no e: Email | {e.from = Server or e.to = Server}
-
-    all disj f1, f2, f3: File |
-        (f1 in f2.same_content and f2 in f3.same_content)
-        implies f1 in f3.same_content
 
     -- No item can be in more than one folder's items.
     no disj f1, f2: Folder, i: Item |
@@ -312,7 +312,8 @@ pred nochange_Inbox_properties {
 
 pred doNothing {
     -- Guard(s):
-    // -- This should only run when the model is in its final state.
+    -- Can be used to ensure doNothing is only used when the final state is reached.
+    -- However, this requires defining your state predicates in this file.
     // finalState
 
     -- Action(s):

@@ -5,6 +5,7 @@ open "file_sharing.frg"
 option max_tracelength 12
 option min_tracelength 1
 
+-- Options to help with UNSAT core resolution:
 // option solver MiniSatProver
 // option core_minimization rce
 // option logtranslation 1

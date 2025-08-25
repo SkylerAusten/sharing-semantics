@@ -104,6 +104,10 @@ pred midStatesBrochure {
     }
 }
 
+pred traceProperties {
+    #{File} <= 2
+}
+
 pred finalStateBrochure {
     charlieEditsMade
 }
@@ -136,7 +140,7 @@ pred brochureTraces {
     startState
     modelProperties and ownership
     limitedTransitions
-
+    always {traceProperties}
     eventually { midStatesBrochure }
     eventually { always { finalStateBrochure } }
 }

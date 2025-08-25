@@ -39,42 +39,22 @@ pred ownership {
 // ------------------------------------------------------------
 
 // No items or emails in the initial state.
-pred startState {
-    no Item
-    no Email
-    no EmailContent
-}
-
 pred noItemsOrEmails {
     no Item
     no Email
     no EmailContent
 }
 
-pred aliceCreatedComputerFile {
+pred aliceCreatedDriveFile {
 	some f: File | {
 		f.item_owner = Alice
 		f.item_creator = Alice
-		f.location = AliceComputer
+		f.location = AliceDrive
 		no f.shared_with
 	}
 
     no Email
     no same_content
-}
-
-pred aliceUploadedFile {
-	some disj f1, f2: File | {
-		f1.item_owner = Alice
-		f1.location = AliceComputer
-
-		f2.item_owner = Alice
-		f2.location = AliceDrive
-
-		f2 in f1.same_content
-	}
-
-    no Email
 }
 
 pred aliceFileSharedWithJoe {
@@ -90,13 +70,6 @@ pred aliceFileSharedWithJoe {
 		e.email_content = l
 		l.points_to = f
 	}
-}
-
-pred recipientsAndNoLink {
-    some e: Email | {
-        some e.to
-        no e.email_content
-    }
 }
 
 pred limitedTransitions {
@@ -124,23 +97,22 @@ pred initState {
 }
 
 pred midStates {
-    eventually {
-        aliceCreatedComputerFile and eventually {
-            aliceUploadedFile and eventually {
-                recipientsAndNoLink
-            }
-        }
-    }
+    eventually {aliceCreatedDriveFile}
 }
 
 pred finalState {
     aliceFileSharedWithJoe
 }
 
+pred traceProperties {
+    #{File} <= 1
+}
+
 pred menuTraces {
     initState
     modelProperties and ownership
     limitedTransitions
+    always {traceProperties}
     eventually {midStates}
     eventually {always {finalState}}
 }

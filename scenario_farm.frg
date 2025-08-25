@@ -115,18 +115,16 @@ pred finalStateFarm {
     editsMade
 }
 
+pred traceProperties {
+    #{File} <= 2
+}
+
 pred limitedTransitions {
     always {
         doNothing or {
             some p: (Person - Server), l: Location | { createFile[p, l] }
         } or {
-            some p: Person | { createEmail[p] }
-        } or {
-            some p, r: Person, e: Email | { setRecipients[p, e, r] }
-        } or {
-            some p: Person, i: Item, e: Email | { addLink[p, i, e] }
-        } or {
-            some p: Person, e: Email | { sendEmail[p, e] }
+            some p, t: Person, i: Item | { shareItem[p, i, t] }
         } or {
             some p: Person, f: File | { downloadDriveFile[p, f] }
         } or {
@@ -141,7 +139,7 @@ pred farmTraces {
     startState
     modelProperties and ownership
     limitedTransitions
-
+    always {traceProperties}
     eventually { midStatesFarm }
     eventually { always { finalStateFarm } }
 }
